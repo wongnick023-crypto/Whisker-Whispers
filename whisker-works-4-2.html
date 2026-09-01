@@ -1,0 +1,3107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whisker Works · Cat Unit Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF1DC;
+    --bg-alt:#F3E3BC;
+    --panel:#FFFFFF;
+    --panel-alt:#FFF6E3;
+    --ink:#241A10;
+    --ink-soft:#8A7A62;
+    --accent:#EF4B36;
+    --accent-dark:#C23322;
+    --accent-2:#2F9E98;
+    --good:#3FAE63;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --font-display:'Baloo 2', ui-rounded, 'Segoe UI', sans-serif;
+    --font-body:'Nunito', system-ui, -apple-system, sans-serif;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(circle at 12% 8%, var(--bg-alt) 0%, transparent 45%),
+      radial-gradient(circle at 90% 85%, var(--bg-alt) 0%, transparent 40%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+  }
+
+  button{ font-family:inherit; }
+  input,select,textarea{ font-family:inherit; color:var(--ink); }
+
+  *:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+
+  .app-shell{ max-width:1320px; margin:0 auto; padding:20px 20px 60px; }
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex; flex-direction:column; gap:12px;
+    padding:16px 20px; margin-bottom:24px;
+    background:var(--panel);
+    border:3px solid var(--ink);
+    border-radius:var(--radius-lg);
+    box-shadow:6px 6px 0 var(--ink);
+  }
+  .topbar-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .topbar-row-main{ justify-content:space-between; }
+  .topbar-nav{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; flex:1 1 auto; }
+  .topbar-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .topbar-row-data{ padding-top:12px; border-top:2px dashed #E7DCC2; }
+  .data-row-label{
+    font-family:var(--font-display); font-weight:700; font-size:11.5px;
+    text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft);
+    margin-right:2px; white-space:nowrap;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .brand-icon{ font-size:28px; }
+  .brand-text{ font-family:var(--font-display); font-weight:800; font-size:26px; letter-spacing:.3px; }
+  .brand-sub{ font-size:13px; color:var(--ink-soft); font-style:italic; margin-left:4px; }
+  .tabs{ display:flex; gap:10px; flex-wrap:wrap; }
+
+  .btn{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    border:2.5px solid var(--ink);
+    background:var(--panel);
+    color:var(--ink);
+    border-radius:999px;
+    padding:9px 18px;
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+  .btn:active{ transform:translate(2px,2px); box-shadow:0 0 0 var(--ink); }
+  .btn.small{ font-size:13px; padding:6px 12px; }
+  .btn.accent{ background:var(--accent); color:#fff; border-color:var(--accent-dark); }
+  .btn.ghost{ background:transparent; box-shadow:none; }
+  .btn.ghost:hover{ background:var(--panel-alt); box-shadow:none; transform:none; }
+  .btn.danger{ color:var(--accent-dark); border-color:var(--accent-dark); }
+  .btn.danger:hover{ background:#FBE4DF; }
+  .btn[disabled]{ opacity:.6; cursor:default; transform:none !important; }
+
+  .tab-btn{
+    font-family:var(--font-display); font-weight:700; font-size:15px;
+    border:2.5px solid var(--ink); background:var(--panel-alt); color:var(--ink);
+    border-radius:12px; padding:9px 16px; cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .tab-btn:hover{ transform:translate(-1px,-1px); }
+  .tab-btn.active{ background:var(--ink); color:#fff; transform:translate(2px,2px); box-shadow:0 0 0 var(--ink); }
+  .tab-btn.accent{ background:var(--accent); color:#fff; border-color:var(--accent-dark); }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  .input{
+    border:2.5px solid var(--ink); border-radius:var(--radius-sm);
+    padding:9px 12px; font-size:15px; background:#fff; color:var(--ink);
+  }
+  .input:focus{ outline:none; border-color:var(--accent-2); }
+
+  /* ---------- List view ---------- */
+  .list-toolbar{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .list-toolbar #searchInput{ flex:1 1 240px; min-width:180px; }
+  .cat-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:18px;
+  }
+  .cat-card{
+    position:relative;
+    background:var(--panel);
+    border:3px solid var(--ink);
+    border-radius:var(--radius-lg);
+    box-shadow:5px 5px 0 var(--ink);
+    padding:14px 14px 12px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .cat-card:hover{ transform:translate(-2px,-2px); box-shadow:7px 7px 0 var(--ink); }
+  .card-band{ height:9px; border-radius:6px; margin:-14px -14px 12px; border-bottom:3px solid var(--ink); }
+  .card-thumb{
+    width:86px; height:86px; margin:0 auto 10px; border-radius:50%;
+    border:3px solid var(--ink); background:var(--panel-alt);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .card-thumb img{ width:100%; height:100%; object-fit:cover; }
+  .card-thumb svg{ width:44px; height:44px; color:var(--ink-soft); }
+  .card-name{
+    font-family:var(--font-display); font-weight:700; font-size:18px; text-align:center;
+    margin:0 0 8px; line-height:1.2; word-break:break-word;
+  }
+  .card-meta{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .rarity-pill{
+    font-size:11px; font-weight:800; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35);
+    padding:3px 10px; border-radius:999px; letter-spacing:.3px;
+  }
+  .form-count-tag{ font-size:11px; font-weight:700; color:var(--ink-soft); background:var(--panel-alt); padding:3px 9px; border-radius:999px; border:1.5px solid var(--ink-soft); }
+  .card-actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  .card-actions .btn.active{ background:var(--good); color:#fff; border-color:#2b7a47; }
+
+  .empty-state{
+    grid-column:1/-1;
+    text-align:center; padding:50px 20px;
+    border:3px dashed var(--ink-soft); border-radius:var(--radius-lg);
+    background:var(--panel-alt);
+  }
+  .empty-icon svg{ width:64px; height:64px; color:var(--ink-soft); margin-bottom:10px; }
+  .empty-state h3{ font-family:var(--font-display); font-size:22px; margin:6px 0 4px; }
+  .empty-state p{ color:var(--ink-soft); margin:0 0 16px; }
+
+  /* ---------- Compare view ---------- */
+  .compare-toolbar{ margin-bottom:16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .table-scroll{ overflow-x:auto; border:3px solid var(--ink); border-radius:var(--radius-lg); background:var(--panel); }
+  table.compare-table{ border-collapse:separate; border-spacing:0; width:100%; }
+  .compare-table th, .compare-table td{ border-bottom:2px solid #E7DCC2; border-right:2px solid #E7DCC2; padding:10px 12px; vertical-align:top; }
+  .compare-table thead th{ border-bottom:3px solid var(--ink); }
+  th.row-label{
+    position:sticky; left:0; z-index:2;
+    background:var(--panel-alt); text-align:left; min-width:150px;
+    font-family:var(--font-display); font-weight:700; font-size:14px; border-right:3px solid var(--ink);
+  }
+  th.row-label.corner{ background:var(--panel); z-index:3; }
+  th.col-head{ min-width:230px; text-align:center; background:var(--panel); }
+  .col-remove{
+    float:right; border:2px solid var(--ink); background:#fff; border-radius:50%;
+    width:24px; height:24px; line-height:1; cursor:pointer; font-weight:800; color:var(--accent-dark);
+  }
+  .col-band{ height:7px; border-radius:5px; margin:0 auto 8px; }
+  .col-img{ width:64px; height:64px; margin:0 auto 6px; border-radius:50%; border:3px solid var(--ink); overflow:hidden; background:var(--panel-alt); display:flex; align-items:center; justify-content:center; }
+  .col-img img{ width:100%; height:100%; object-fit:cover; }
+  .col-img svg{ width:34px; height:34px; color:var(--ink-soft); }
+  .col-name{ font-family:var(--font-display); font-weight:700; font-size:16px; margin:2px 0; }
+  .col-rarity-label{ font-size:12px; color:var(--ink-soft); font-weight:700; margin-bottom:8px; }
+  .form-switch{ display:flex; gap:4px; justify-content:center; margin-bottom:8px; flex-wrap:wrap; }
+  .form-pill{
+    font-family:var(--font-display); font-weight:700; font-size:12px;
+    border:2px solid var(--form-border, var(--ink)); background:var(--panel-alt); color:var(--ink);
+    border-radius:8px; padding:4px 8px; cursor:pointer;
+    max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .form-pill.active{ background:var(--form-color, var(--ink)); color:var(--form-text, #fff); }
+  .col-level{ font-size:12px; font-weight:700; color:var(--ink-soft); display:inline-flex; align-items:center; gap:6px; }
+  .col-level input{ width:64px; border:2px solid var(--ink); border-radius:var(--radius-sm); padding:4px 6px; font-size:13px; }
+  .stat-at-level{ font-weight:800; }
+  td.text-cell{ min-width:230px; max-width:280px; white-space:pre-wrap; font-size:13.5px; line-height:1.4; }
+
+  /* ---------- Edit view ---------- */
+  .edit-header{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+  .edit-header h2{ font-family:var(--font-display); font-size:24px; margin:0; flex:1; text-align:center; }
+  .edit-actions{ display:flex; gap:8px; }
+
+  .basics-grid{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;
+    background:var(--panel); border:3px solid var(--ink); border-radius:var(--radius-lg);
+    box-shadow:5px 5px 0 var(--ink); padding:18px; margin-bottom:20px;
+  }
+  .text-field{ display:flex; flex-direction:column; gap:6px; }
+  .text-field span{ font-weight:800; font-size:13px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.4px; }
+  .text-field input, .text-field textarea{ border:2.5px solid var(--ink); border-radius:var(--radius-sm); padding:9px 12px; font-size:15px; }
+  .text-field textarea{ resize:vertical; min-height:64px; }
+
+  .picker-block{ display:flex; flex-direction:column; gap:6px; }
+  .picker-label{ font-weight:800; font-size:13px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.4px; }
+  .rarity-picker, .formcount-picker{ display:flex; gap:6px; flex-wrap:wrap; }
+  .rarity-opt{
+    border:2.5px solid var(--ink); border-radius:999px; padding:6px 12px;
+    font-family:var(--font-display); font-weight:700; font-size:13px; color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.35); cursor:pointer; opacity:.75;
+  }
+  .rarity-opt.active{ opacity:1; border-width:3.5px; transform:scale(1.06); }
+  .count-opt{
+    min-width:38px; height:38px; border:2.5px solid var(--form-border, var(--ink)); border-radius:10px;
+    background:var(--panel-alt); font-family:var(--font-display); font-weight:800; font-size:14px; cursor:pointer;
+    padding:0 12px;
+  }
+  .count-opt.active{ background:var(--form-color, var(--accent)); color:var(--form-text, #fff); border-color:var(--form-border, var(--accent-dark)); }
+
+  .banner-picker{ display:flex; gap:6px; flex-wrap:wrap; }
+  .banner-opt{
+    border:2.5px solid var(--ink); border-radius:999px; padding:6px 14px;
+    font-family:var(--font-display); font-weight:700; font-size:13px;
+    background:var(--panel-alt); color:var(--ink); cursor:pointer;
+  }
+  .banner-opt.active{ background:var(--accent-2); color:#fff; border-color:#1F6E69; }
+  .banner-opt.add-new{ background:transparent; border-style:dashed; color:var(--ink-soft); }
+  .banner-tag{ font-size:11px; font-weight:700; color:#fff; background:var(--accent-2); padding:3px 9px; border-radius:999px; }
+
+  .form-tabs{ display:flex; gap:6px; margin-bottom:0; }
+  .form-tab{
+    font-family:var(--font-display); font-weight:700; font-size:14px;
+    border:3px solid var(--ink); border-bottom:none; background:var(--panel-alt); color:var(--ink-soft);
+    border-radius:12px 12px 0 0; padding:9px 18px; cursor:pointer; position:relative; top:3px;
+    box-shadow:0 -4px 0 -1px var(--form-color, transparent) inset;
+  }
+  .form-tab.active{ background:var(--form-color, var(--panel)); color:var(--form-text, var(--ink)); top:0; box-shadow:0 -3px 0 var(--ink) inset; }
+  .form-name-row{ display:flex; align-items:flex-end; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
+  .form-name-field{ margin-bottom:0; max-width:320px; flex:1 1 220px; }
+  .level-badge-inline{ font-size:11px; font-weight:800; opacity:.85; margin-left:3px; }
+  .level-input-inline{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800; color:var(--ink-soft); margin-left:4px; }
+  .level-input-inline input{ width:70px; border:2px solid var(--ink); border-radius:var(--radius-sm); padding:6px 8px; font-size:14px; font-weight:700; }
+  .level-preview-hint{ font-size:12.5px; font-weight:700; color:#1F6E69; margin:0 0 16px; line-height:1.4; }
+  .level-preview-value{ display:block; margin-top:4px; font-size:11.5px; font-weight:800; color:#1F6E69; }
+  .effective-preview-value{ display:block; margin-top:4px; font-size:11.5px; font-weight:800; color:var(--accent-dark); }
+
+  .form-panels{ background:var(--panel); border:3px solid var(--ink); border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg); padding:20px; box-shadow:5px 5px 0 var(--ink); }
+  .panel-grid{ display:grid; grid-template-columns:220px 1fr; gap:22px; margin-bottom:20px; }
+  .image-col{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .image-drop{
+    width:190px; height:190px; border:3px dashed var(--ink-soft); border-radius:var(--radius-md);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer;
+    background:var(--panel-alt);
+  }
+  .image-drop.drag{ border-color:var(--accent-2); background:#E9F7F6; }
+  .image-drop img{ width:100%; height:100%; object-fit:cover; }
+  .img-placeholder svg{ width:56px; height:56px; color:var(--ink-soft); }
+  .image-btns{ display:flex; gap:6px; }
+
+  .stats-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:16px; }
+  .stat-field{ display:flex; flex-direction:column; gap:5px; }
+  .stat-field span{ font-size:12.5px; font-weight:700; color:var(--ink-soft); }
+  .stat-field input{ border:2px solid var(--ink); border-radius:var(--radius-sm); padding:7px 10px; font-size:14px; }
+
+  .growth-box{
+    background:#FFF3D6; border:2.5px solid #E0AA2E; border-radius:var(--radius-md);
+    padding:14px; margin-top:4px;
+  }
+  .growth-box-title{ font-family:var(--font-display); font-weight:700; font-size:14px; margin:0 0 10px; color:#8A5B00; }
+  .growth-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+
+  .base-level-row{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-top:14px; padding-top:14px; border-top:1.5px dashed #E0AA2E;
+  }
+  .base-level-field{ flex:0 0 auto; }
+  .base-level-field input{ width:80px; }
+  .base-level-note{ font-size:12px; font-weight:700; color:#8A5B00; flex:1 1 160px; }
+
+  .stat-computed .computed-value{
+    border:2.5px dashed var(--accent-2); border-radius:var(--radius-sm);
+    padding:8px 10px; font-size:15px; font-weight:800; color:#1F6E69; background:#E9F7F6;
+  }
+  .auto-badge{
+    font-size:9px; font-weight:800; color:#fff; background:var(--accent-2); border-radius:999px;
+    padding:1.5px 6px; margin-left:5px; letter-spacing:.3px; vertical-align:1px;
+  }
+
+  .trait-box{
+    background:#E9F7F6; border:2.5px solid var(--accent-2); border-radius:var(--radius-md);
+    padding:14px; margin-top:14px;
+  }
+  .trait-box-title{ font-family:var(--font-display); font-weight:700; font-size:14px; margin:0 0 10px; color:#1F6E69; }
+  .trait-box-row{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .trait-box-row select{ border:2px solid var(--ink); border-radius:var(--radius-sm); padding:7px 10px; font-size:14px; background:#fff; }
+  .trait-value-fields{ display:flex; gap:10px; flex-wrap:wrap; }
+  .trait-value-fields .stat-field{ width:130px; }
+  .trait-value-fields .stat-field input{ width:100%; }
+  .trait-checkbox{ display:flex; align-items:center; gap:7px; font-weight:700; font-size:13.5px; cursor:pointer; }
+  .trait-checkbox input{ width:17px; height:17px; cursor:pointer; accent-color:var(--accent-2); }
+  .trait-box-hint{ margin:10px 0 0; font-size:12.5px; color:#1F6E69; font-weight:700; line-height:1.4; }
+
+  .btn.toggle.active{ background:var(--accent-2); color:#fff; border-color:#1F6E69; }
+  .asterisk{ color:#D98E00; font-weight:800; }
+
+  .talents-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .talent-list{ display:flex; flex-direction:column; gap:8px; }
+  .talent-row{ display:flex; align-items:center; gap:8px; background:var(--panel-alt); border:2px solid #E7DCC2; border-radius:var(--radius-sm); padding:6px 8px; }
+  .talent-icon-btn{
+    width:38px; height:38px; flex:0 0 auto; border:2px solid var(--ink); border-radius:8px;
+    background:#fff; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .talent-icon-btn img{ width:100%; height:100%; object-fit:cover; }
+  .talent-icon-placeholder{ font-size:17px; color:var(--ink-soft); }
+  .talent-name-input{ flex:1 1 auto; min-width:100px; }
+  .talent-np-field{ display:flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; color:var(--ink-soft); flex:0 0 auto; }
+  .talent-np-field input{ width:66px; border:2px solid var(--ink); border-radius:var(--radius-sm); padding:6px 8px; font-size:14px; }
+  .talent-remove-btn{
+    width:26px; height:26px; flex:0 0 auto; border:2px solid var(--ink); background:#fff; border-radius:50%;
+    cursor:pointer; font-weight:800; color:var(--accent-dark); line-height:1; padding:0;
+  }
+  .talent-empty{ color:var(--ink-soft); font-size:13.5px; font-style:italic; margin:4px 0; }
+
+  .talent-chip{
+    display:inline-flex; align-items:center; gap:5px; background:#fff; border:1.5px solid #E0AA2E;
+    border-radius:999px; padding:3px 9px 3px 3px; margin:2px 4px 2px 0; font-size:12.5px; font-weight:700;
+  }
+  .talent-chip-icon{ width:20px; height:20px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:var(--panel-alt); font-size:10px; flex:0 0 auto; }
+  .talent-chip-icon img{ width:100%; height:100%; object-fit:cover; }
+  .talent-chip-cost{ color:#8A5B00; font-weight:800; }
+
+  .ability-box{ margin-top:4px; }
+  .ability-box .trait-box-row{ align-items:flex-end; }
+  .ability-chip-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .ability-chip{
+    display:inline-flex; align-items:center; gap:4px; background:#fff; border:1.5px solid var(--accent-2);
+    border-radius:999px; padding:4px 6px 4px 12px; font-size:12.5px; font-weight:700; color:#1F6E69;
+  }
+  .ability-chip button{
+    width:18px; height:18px; flex:0 0 auto; border:none; background:transparent; border-radius:50%;
+    cursor:pointer; font-weight:800; color:var(--accent-dark); line-height:1; padding:0; font-size:14px;
+  }
+  .ability-empty{ color:var(--ink-soft); font-size:13.5px; font-style:italic; margin:4px 0; }
+  .wiki-source-links a{ color:#1F6E69; font-weight:800; text-decoration:underline; }
+  .wiki-source-links a + a{ margin-left:8px; }
+
+  .text-sections{ display:flex; flex-direction:column; gap:14px; border-top:2.5px dashed #E7DCC2; padding-top:18px; }
+
+  .picker-list{ max-height:320px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; }
+  .picker-row{ display:flex; align-items:center; gap:10px; padding:6px 4px; border-bottom:1.5px solid #EEE1C2; font-weight:600; }
+  .tiny-tag{ font-size:11px; color:var(--ink-soft); }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(20,14,8,.55); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px; }
+  .modal-box{ background:var(--panel); border:3px solid var(--ink); border-radius:var(--radius-lg); box-shadow:6px 6px 0 var(--ink); padding:22px; max-width:440px; width:100%; }
+  .modal-box h3{ font-family:var(--font-display); margin:0 0 12px; font-size:20px; }
+  .modal-body p{ margin:0 0 8px; line-height:1.5; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+
+  /* ---------- Toasts ---------- */
+  .toast-root{ position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:10px; z-index:200; }
+  .toast{
+    background:var(--ink); color:#fff; padding:12px 18px; border-radius:var(--radius-md);
+    font-weight:700; font-size:14px; box-shadow:4px 4px 0 rgba(0,0,0,.25);
+    border-left:6px solid var(--good); opacity:0; transform:translateY(8px); transition:opacity .25s ease, transform .25s ease;
+    max-width:280px;
+  }
+  .toast.show{ opacity:1; transform:translateY(0); }
+  .toast.error{ border-left-color:var(--accent); }
+
+  .loading-msg{ text-align:center; padding:40px; color:var(--ink-soft); font-weight:700; font-family:var(--font-display); }
+
+  @media (max-width:760px){
+    .basics-grid{ grid-template-columns:1fr; }
+    .panel-grid{ grid-template-columns:1fr; }
+    .image-col{ flex-direction:row; }
+    .edit-header h2{ order:3; width:100%; text-align:left; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="topbar">
+    <div class="topbar-row topbar-row-main">
+      <div class="brand">
+        <span class="brand-icon">🐾</span>
+        <span class="brand-text">Whisker Works</span>
+        <span class="brand-sub">custom cat unit builder &amp; compare lab</span>
+      </div>
+      <div class="topbar-nav">
+        <nav class="tabs">
+          <button type="button" class="tab-btn active" data-view="list">My Cats</button>
+          <button type="button" class="tab-btn" data-view="compare" id="compareTabBtn">Compare</button>
+        </nav>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn small ghost" id="newBannerBtn">+ Banner</button>
+        <button type="button" class="btn accent" id="newCatBtn">+ New Cat</button>
+      </div>
+    </div>
+    <div class="topbar-row topbar-row-data">
+      <span class="data-row-label">Import / Export</span>
+      <button type="button" class="btn small ghost" id="importCatBtn" title="Import a single cat someone shared with you">Import Cat</button>
+      <button type="button" class="btn small ghost" id="importAllBtn" title="Import a Whisker Works export file (all cats, one cat, or one banner)">Import File</button>
+      <button type="button" class="btn small ghost" id="exportAllBtn" title="Download all your cats and banners as one JSON file">Export All</button>
+      <input type="file" id="importCatInput" accept="application/json,.json" style="display:none">
+      <input type="file" id="importAllInput" accept="application/json,.json" style="display:none">
+    </div>
+  </header>
+
+  <main>
+    <section class="view active" id="view-list">
+      <div class="list-toolbar">
+        <input type="search" id="searchInput" class="input" placeholder="Search your cats…">
+        <select id="bannerFilterSelect" class="input">
+          <option value="all">All banners</option>
+        </select>
+        <select id="rarityFilterSelect" class="input">
+          <option value="all">All rarities</option>
+          <option value="normal">Normal</option>
+          <option value="special">Special</option>
+          <option value="rare">Rare</option>
+          <option value="super">Super Rare</option>
+          <option value="uber">Uber Rare</option>
+          <option value="legend">Legend Rare</option>
+        </select>
+        <button type="button" class="btn small ghost" id="exportBannerBtn" title="Export the selected banner (and its cats) to share with a friend">Export Banner</button>
+        <button type="button" class="btn small ghost" id="importBannerBtn" title="Import a banner file someone shared with you">Import Banner</button>
+        <input type="file" id="importBannerInput" accept="application/json,.json" style="display:none">
+      </div>
+      <div class="cat-grid" id="catGrid">
+        <div class="loading-msg">Loading your cats…</div>
+      </div>
+    </section>
+
+    <section class="view" id="view-compare">
+      <div class="compare-toolbar">
+        <button type="button" class="btn accent" id="addToCompareBtn">+ Add cats to compare</button>
+        <button type="button" class="btn small toggle" id="compareEffectiveBtn" title="Show DPS boosted by the Strong Against trait bonus for cats set up for it">Effective<span class="asterisk">*</span></button>
+      </div>
+      <div id="compareGrid"></div>
+    </section>
+
+    <section class="view" id="view-edit">
+      <form id="catForm">
+        <div class="edit-header">
+          <button type="button" class="btn ghost" id="backToList">← Back</button>
+          <h2 id="editTitle">New Cat</h2>
+          <div class="edit-actions">
+            <button type="button" class="btn ghost danger" id="deleteCatBtn" hidden>Delete</button>
+            <button type="submit" class="btn accent" id="saveCatBtn">Save Cat</button>
+          </div>
+        </div>
+
+        <div class="basics-grid">
+          <div class="picker-block">
+            <span class="picker-label">Rarity</span>
+            <div class="rarity-picker" id="rarityPicker"></div>
+          </div>
+          <div class="picker-block">
+            <span class="picker-label">Banner</span>
+            <div class="banner-picker" id="bannerPicker"></div>
+          </div>
+          <div class="picker-block">
+            <span class="picker-label">Number of forms</span>
+            <div class="formcount-picker" id="formCountPicker"></div>
+          </div>
+        </div>
+
+        <div class="form-tabs" id="formTabs"></div>
+        <div class="form-panels" id="formPanels"></div>
+      </form>
+    </section>
+  </main>
+
+  <div id="modalRoot"></div>
+  <div class="toast-root" id="toastRoot"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================= Constants ============================= */
+
+  const RARITIES = [
+    { key:'normal',  label:'Normal',      color:'#9CA6B0' },
+    { key:'special', label:'Special',     color:'#4EA6E0' },
+    { key:'rare',    label:'Rare',        color:'#9B5FE0' },
+    { key:'super',   label:'Super Rare',  color:'#EEB93A' },
+    { key:'uber',    label:'Uber Rare',   gradient:'linear-gradient(135deg,#F2703C,#E23A63)' },
+    { key:'legend',  label:'Legend Rare', gradient:'linear-gradient(135deg,#F04FA0,#7B4FE0)' }
+  ];
+  const RARITY_MAP = Object.fromEntries(RARITIES.map(r => [r.key, r]));
+
+  const FORM_LABELS = ['Normal', 'Evolved', 'True', 'Ultra'];
+  const FORM_SHORT  = ['N', 'EV', 'TF', 'UF'];
+  // Default preview level per form slot: Normal starts at 1, Evolved unlocks around 10,
+  // True Form around 30, Ultra Form around 60. Each form keeps its own growth-per-level
+  // values (hpGrowth/dmgGrowth on that form), so this only picks which level to preview —
+  // it never borrows another form's growth rate.
+  const FORM_LEVELS = [1, 10, 30, 60];
+  const FORM_COLORS = [
+    { bg:'#9CA3AF', text:'#241A10', border:'#6E7580' },                                   // Normal - grey
+    { bg:'#F6EBC8', text:'#8A6D1F', border:'#E0C97A' },                                   // Evolved - faint light gold
+    { bg:'#D4AF37', text:'#3B2A05', border:'#A6841F' },                                   // True - solid gold
+    { bg:'linear-gradient(135deg,#D9402C 68%,#E8C24A 100%)', text:'#fff', border:'#8F1F14' } // Ultra - red with a hint of gold
+  ];
+
+  function formLabelAt(cat, i){
+    const f = cat && cat.forms && cat.forms[i];
+    return (f && f.label && f.label.trim()) ? f.label.trim() : (FORM_LABELS[i] || ('Form ' + (i + 1)));
+  }
+
+  const MY_BANNER_ID = 'my-banner';
+  const MY_BANNER_NAME = 'My Banner';
+
+  const STAT_FIELDS = [
+    { key:'hp',       label:'Health (HP)' },
+    { key:'ap',       label:'Damage' },
+    { key:'dps',      label:'DPS', computed:true },
+    { key:'range',    label:'Attack Range' },
+    { key:'speed',    label:'Movement Speed' },
+    { key:'kb',       label:'Knockback' },
+    { key:'tba',      label:'Time Between Attacks (s)' },
+    { key:'animTime', label:'Attack Animation (s)' },
+    { key:'recharge', label:'Recharge Time (s)' },
+    { key:'cost',     label:'Deploy Cost' }
+  ];
+
+  // Target Type (Single Target / Area Attack) and Range Modifier (None / Omni Strike / Long
+  // Distance) are independent choices — a cat can be, say, an Area Attack with Long Distance,
+  // or a plain Single Target with Omni Strike. The Range Modifier is what controls which extra
+  // boxes appear next to the standard Attack Range field: Omni Strike hits both in front of and
+  // behind the cat, so it gets its own negative-only range box. Long Distance attacks don't hit
+  // anything closer than a "Blindspot" or beyond a "Standing Range", so it gets both of those
+  // boxes instead.
+  const TARGET_TYPES = [
+    { key:'single', label:'Single Target' },
+    { key:'area',   label:'Area Attack' }
+  ];
+  const TARGET_TYPE_MAP = Object.fromEntries(TARGET_TYPES.map(t => [t.key, t]));
+
+  const RANGE_MODIFIERS = [
+    { key:'none',         label:'None' },
+    { key:'omni',         label:'Omni Strike' },
+    { key:'longdistance', label:'Long Distance' }
+  ];
+  const RANGE_MODIFIER_MAP = Object.fromEntries(RANGE_MODIFIERS.map(t => [t.key, t]));
+
+  // Extra range-related stat keys that live in f.stats alongside the normal STAT_FIELDS keys,
+  // but only apply (and are only shown) for certain range modifiers.
+  const EXTRA_RANGE_STAT_KEYS = ['rangeOmni', 'rangeBlindspot', 'rangeStandingRange'];
+
+  /* ---- Evolve Requirements: materials & defaults ---- */
+
+  // Catfruits: nine colors, each available as a plain Catfruit or a Catfruit Seed (the
+  // user picks which per material they add).
+  const CATFRUIT_COLORS = ['Blue', 'Red', 'Pink', 'Green', 'Yellow', 'Epic', 'Aku', 'Relic', 'Gold'];
+  // Behemoth Stones: six colors, each available as a plain Behemoth Stone or a Behemoth Gem.
+  const BEHEMOTH_COLORS = ['Purple', 'Red', 'Green', 'Blue', 'Yellow', 'Epic'];
+
+  const MATERIALS = [].concat(
+    CATFRUIT_COLORS.map(c => ({
+      key: 'catfruit_' + c.toLowerCase(), group:'Catfruit', color:c,
+      variants: [ { key:'fruit', label:'Catfruit' }, { key:'seed', label:'Catfruit Seed' } ]
+    })),
+    BEHEMOTH_COLORS.map(c => ({
+      key: 'behemoth_' + c.toLowerCase(), group:'Behemoth Stone', color:c,
+      variants: [ { key:'stone', label:'Behemoth Stone' }, { key:'gem', label:'Behemoth Gem' } ]
+    }))
+  );
+  const MATERIAL_MAP = Object.fromEntries(MATERIALS.map(m => [m.key, m]));
+
+  // Default evolve requirement when no materials are set for a given form slot: Evolved
+  // defaults to "Reach Level 10", True defaults to "Reach Level 30". Ultra (index 3) has no
+  // default — it always needs at least one material entered.
+  const EVOLVE_DEFAULT_LEVEL = { 1: 10, 2: 30 };
+
+  // Standard Battle Cats enemy traits (per the Battle Cats Wiki's trait filter set).
+  // "Special" categories like Colossus/Behemoth/Sage/Witch/Eva Angel aren't true traits
+  // and use their own Slayer/Killer abilities instead of Strong Against, so they're left out here.
+  // Sourced from the "Special Abilities" pages of the Battle Cats Wiki:
+  // https://battlecats.miraheze.org/wiki/Special_Abilities
+  // https://battle-cats.fandom.com/wiki/Special_Abilities
+  const TRAITS = [
+    { key:'none',     label:'None / Traitless' },
+    { key:'red',      label:'Red' },
+    { key:'floating', label:'Floating' },
+    { key:'black',    label:'Black' },
+    { key:'metal',    label:'Metal' },
+    { key:'angel',    label:'Angel' },
+    { key:'alien',    label:'Alien' },
+    { key:'zombie',   label:'Zombie' },
+    { key:'relic',    label:'Relic' },
+    { key:'aku',      label:'Aku' }
+  ];
+  const TRAIT_MAP = Object.fromEntries(TRAITS.map(t => [t.key, t]));
+
+  // Trait-targeting abilities: Effects that only work against enemies of a specific trait, as
+  // opposed to Neutral Abilities below (which work the same regardless of trait). Sourced from
+  // the "Trait Targeting" / attack-effect section of the Battle Cats Wiki's Special Abilities
+  // page: https://battlecats.miraheze.org/wiki/Special_Abilities
+  // "Strong Against" has a fixed, game-wide multiplier (1.4x dealt / 0.4x taken). "Massive Damage"
+  // and "Insane Damage" also boost damage dealt, but by an amount that varies per unit, so those
+  // are entered as a percentage. "Resistant" and "Insanely Tough" reduce damage taken by an
+  // amount that also varies per unit, entered as a decimal fraction (e.g. 0.25 = takes 25%
+  // damage). These five are wired into the Effective DPS preview below. The rest (Weaken,
+  // Freeze, Slow, Knockback, Dodge Attack, Curse) proc at a chance and some run for a duration —
+  // each carries its own small set of `fields` (chance / duration / weaken amount) that render
+  // as extra inputs when picked, and are shown as reference tags only (not part of the DPS math).
+  const TRAIT_ABILITIES = [
+    { key:'strong_against', label:'Strong Against',  kind:'offense', desc:'Deals 1.4x damage to, and takes 0.5x damage from, this trait.' },
+    { key:'massive_damage', label:'Massive Damage',  kind:'offense', desc:'Deals bonus damage to this trait.',
+      fields:[{ key:'value', label:'Damage dealt (%)', suffix:'%', default:300, step:1, min:0 }] },
+    { key:'insane_damage',  label:'Insane Damage',   kind:'offense', desc:'Deals even greater bonus damage to this trait than Massive Damage.',
+      fields:[{ key:'value', label:'Damage dealt (%)', suffix:'%', default:500, step:1, min:0 }] },
+    { key:'resistant',      label:'Resistant',       kind:'defense', desc:'Takes reduced damage from this trait.',
+      fields:[{ key:'value', label:'Damage taken (×)', suffix:'×', default:0.25, step:0.01, min:0 }] },
+    { key:'insanely_tough', label:'Insanely Tough',  kind:'defense', desc:'Takes drastically reduced damage from this trait.',
+      fields:[{ key:'value', label:'Damage taken (×)', suffix:'×', default:0.1666, step:0.0001, min:0 }] },
+    { key:'weaken',         label:'Weaken',          kind:'other', desc:"Chance to reduce this trait's attack power for a duration.",
+      fields:[
+        { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 },
+        { key:'weakenPct', label:'Weakens power by (%)', suffix:'%', default:50, step:1, min:0, max:100 },
+        { key:'duration', label:'Duration (sec)', suffix:'s', default:3, step:0.1, min:0 }
+      ] },
+    { key:'freeze',         label:'Freeze',          kind:'other', desc:'Chance to freeze this trait in place for a duration.',
+      fields:[
+        { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 },
+        { key:'duration', label:'Duration (sec)', suffix:'s', default:3, step:0.1, min:0 }
+      ] },
+    { key:'slow',           label:'Slow',            kind:'other', desc:"Chance to slow this trait's movement for a duration.",
+      fields:[
+        { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 },
+        { key:'duration', label:'Duration (sec)', suffix:'s', default:3, step:0.1, min:0 }
+      ] },
+    { key:'knockback',      label:'Knockback',       kind:'other', desc:'Chance for an extra knockback against this trait.',
+      fields:[
+        { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 },
+        { key:'distance', label:'Distance', suffix:'', default:165, step:1, min:0 }
+      ] },
+    { key:'dodge_attack',   label:'Dodge Attack',    kind:'other', desc:"Chance to dodge this trait's single-target attacks.",
+      fields:[
+        { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 },
+        { key:'duration', label:'Duration (sec)', suffix:'s', default:2, step:0.1, min:0 }
+      ] },
+    { key:'curse',          label:'Curse',           kind:'other', desc:'Chance to stop this trait from attacking for a duration.',
+      fields:[
+        { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 }
+      ] },
+    { key:'attacks_only',   label:'Attacks Only',    kind:'other', desc:'This unit can only target this trait while it is attacking — it will ignore them otherwise.' }
+  ];
+  const TRAIT_ABILITY_MAP = Object.fromEntries(TRAIT_ABILITIES.map(a => [a.key, a]));
+
+  // Damage-dealt multiplier for a single trait effect entry (only offense-kind abilities apply).
+  function dealtMultiplierOf(e){
+    if (e.ability === 'strong_against') return EFFECTIVE_DEALT_MULT;
+    if (e.ability === 'massive_damage' || e.ability === 'insane_damage'){
+      const pct = Number(e.value);
+      return (pct && pct > 0) ? pct / 100 : 1;
+    }
+    return 1;
+  }
+
+  // A form can carry several offense trait effects (against different traits, or different
+  // abilities). The DPS preview shows the strongest damage-dealt multiplier among them.
+  function bestDealtMultiplier(f){
+    const offense = (f && f.traitEffects || []).filter(e => (TRAIT_ABILITY_MAP[e.ability] || {}).kind === 'offense');
+    if (!offense.length) return 1;
+    return Math.max.apply(null, offense.map(dealtMultiplierOf));
+  }
+
+  // Damage-taken multiplier for a single trait effect entry (Strong Against, Resistant, and
+  // Insanely Tough all reduce damage taken; the rest don't apply here).
+  function takenMultiplierOf(e){
+    if (e.ability === 'strong_against') return EFFECTIVE_TAKEN_MULT;
+    if (e.ability === 'resistant' || e.ability === 'insanely_tough'){
+      const v = Number(e.value);
+      return (v || v === 0) ? v : null;
+    }
+    return null;
+  }
+
+  // The smallest (best) damage-taken multiplier among a form's trait effects, or null if none apply.
+  function bestTakenMultiplier(f){
+    const vals = (f && f.traitEffects || []).map(takenMultiplierOf).filter(v => v !== null && v > 0);
+    if (!vals.length) return null;
+    return Math.min.apply(null, vals);
+  }
+
+  // Neutral Abilities: abilities that work the same regardless of enemy trait, as opposed to
+  // trait-targeted Effects (Weaken, Strong Against, Resistant, etc). Sourced from the "Neutral
+  // Abilities" section of the Battle Cats Wiki:
+  // https://battlecats.miraheze.org/wiki/Special_Abilities
+  // https://battle-cats.fandom.com/wiki/Special_Abilities
+  // Shared "Chance (%)" field used by several abilities below to mirror the trigger-chance
+  // field already used for trait-targeting effects (Weaken, Knockback, etc).
+  const CHANCE_FIELD = { key:'chance', label:'Chance (%)', suffix:'%', default:100, step:1, min:0, max:100 };
+
+  const NEUTRAL_ABILITIES = [
+    { key:'strengthen',        label:'Strengthen', fields:[
+        { key:'percent',          label:'Strengthens damage by (%)', suffix:'%', default:150, step:1, min:0 },
+        { key:'knockbackTrigger', label:'Activates after (knockbacks)', suffix:'', default:1, step:1, min:0 }
+      ] },
+    { key:'survive',           label:'Survive', fields:[
+        CHANCE_FIELD,
+        { key:'recoverPercent',  label:'Recovers to (% HP)', suffix:'%', default:1, step:1, min:0, max:100 }
+      ] },
+    { key:'base_destroyer',    label:'Base Destroyer' },
+    { key:'critical',          label:'Critical', fields:[ CHANCE_FIELD ] },
+    { key:'metal',             label:'Metal' },
+    { key:'zombie_killer',     label:'Zombie Killer' },
+    { key:'metal_killer',      label:'Metal Killer', fields:[
+        { key:'percent', label:'Damage (%)', suffix:'%', default:0, step:1, min:0 }
+      ] },
+    { key:'witch_killer',      label:'Witch Killer' },
+    { key:'eva_angel_killer',  label:'EVA Angel Killer' },
+    { key:'soulstrike',        label:'Soulstrike' },
+    { key:'barrier_breaker',   label:'Barrier Breaker', fields:[ CHANCE_FIELD ] },
+    { key:'shield_piercing',   label:'Shield Piercing' },
+    { key:'savage_blow',       label:'Savage Blow', fields:[ CHANCE_FIELD ] },
+    { key:'extra_money',       label:'Extra Money' },
+    { key:'wave_attack',       label:'Wave Attack', fields:[ CHANCE_FIELD ] },
+    { key:'mini_wave',         label:'Mini-Wave', fields:[ CHANCE_FIELD ] },
+    { key:'surge_attack',      label:'Surge Attack', fields:[ CHANCE_FIELD ] },
+    { key:'mini_surge',        label:'Mini-Surge', fields:[ CHANCE_FIELD ] },
+    { key:'counter_surge',     label:'Counter-Surge' },
+    { key:'wave_shield',       label:'Wave Shield' },
+    { key:'conjure',           label:'Conjure' },
+    { key:'colossus_slayer',   label:'Colossus Slayer' },
+    { key:'behemoth_slayer',   label:'Behemoth Slayer' },
+    { key:'sage_slayer',       label:'Sage Slayer' },
+    { key:'explosion',         label:'Explosion', fields:[ CHANCE_FIELD ] }
+  ];
+  const NEUTRAL_ABILITY_MAP = Object.fromEntries(NEUTRAL_ABILITIES.map(a => [a.key, a]));
+  function abilityLabel(key){ return (NEUTRAL_ABILITY_MAP[key] || {}).label || key; }
+
+  // Immunities: a separate list of "immune to X" abilities, kept apart from Neutral Abilities
+  // so they get their own box in the editor. Sourced from the Battle Cats Wiki.
+  const IMMUNITY_ABILITIES = [
+    { key:'immune_freeze',    label:'Immune to Freeze' },
+    { key:'immune_slow',      label:'Immune to Slow' },
+    { key:'immune_weaken',    label:'Immune to Weaken' },
+    { key:'immune_knockback', label:'Immune to Knockback' },
+    { key:'immune_wave',      label:'Immune to Waves' },
+    { key:'immune_surge',     label:'Immune to Surge' },
+    { key:'immune_explosion', label:'Immune to Explosion' },
+    { key:'immune_warp',      label:'Immune to Warp' },
+    { key:'immune_curse',     label:'Immune to Curse' },
+    { key:'immune_toxic',     label:'Immune to Toxic' }
+  ];
+  const IMMUNITY_MAP = Object.fromEntries(IMMUNITY_ABILITIES.map(a => [a.key, a]));
+  function immunityLabel(key){ return (IMMUNITY_MAP[key] || {}).label || key; }
+
+  // The "Strong Against" ability's damage multipliers.
+  const EFFECTIVE_DEALT_MULT = 1.4;
+  const EFFECTIVE_TAKEN_MULT = 0.5;
+
+  /* ============================= State ============================= */
+
+  let indexCache = [];       // [{id,name,rarity,formCount,thumb,bannerId}]
+  let bannersCache = [];     // [{id,name}]
+  let catsCache = {};        // id -> full cat object
+  let workingCat = null;     // clone being edited
+  let editingIsNew = true;
+  let activeFormIndex = 0;
+
+  let compareIds = [];       // ordered ids in comparison
+  let compareFormIdx = {};   // id -> active form index in compare view
+  let compareLevel = {};     // id -> level currently shown in compare view
+
+  let searchTerm = '';
+  let rarityFilter = 'all';
+  let bannerFilter = 'all';
+
+  let effectivePreviewOn = false;   // edit-view "Effective*" preview toggle
+  let compareEffectiveOn = false;   // compare-view "Effective*" toggle
+  let levelPreviewOn = false;       // edit-view "Levels" preview toggle
+
+  /* ============================= Utilities ============================= */
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+    ));
+  }
+
+  function uid(prefix){
+    return (prefix || 'cat') + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function formatNum(n){
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return Number(n).toLocaleString();
+  }
+
+  function formatDps(n){
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return Number(n).toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  function rarityBg(key){
+    const r = RARITY_MAP[key] || RARITY_MAP.normal;
+    return r.gradient || r.color;
+  }
+
+  function pawSVG(){
+    return '<svg viewBox="0 0 120 120" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="60" cy="80" rx="32" ry="26"/>' +
+      '<ellipse cx="22" cy="48" rx="14" ry="18" transform="rotate(-18 22 48)"/>' +
+      '<ellipse cx="49" cy="27" rx="13" ry="18"/>' +
+      '<ellipse cx="79" cy="27" rx="13" ry="18"/>' +
+      '<ellipse cx="106" cy="48" rx="14" ry="18" transform="rotate(18 106 48)"/>' +
+      '</svg>';
+  }
+
+  function resizeImageElement(img, maxDim, quality){
+    let w = img.width, h = img.height;
+    if (w >= h) { if (w > maxDim) { h = Math.round(h * (maxDim / w)); w = maxDim; } }
+    else { if (h > maxDim) { w = Math.round(w * (maxDim / h)); h = maxDim; } }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+
+  function resizeImageFromFile(file, maxDim, quality){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => { try { resolve(resizeImageElement(img, maxDim, quality)); } catch(err){ reject(err); } };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function resizeDataUrl(dataUrl, maxDim, quality){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => { try { resolve(resizeImageElement(img, maxDim, quality)); } catch(err){ reject(err); } };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  /* ============================= Storage ============================= */
+
+  // This app runs as a plain HTML file in a regular browser (not only inside
+  // a Claude artifact), so it uses the browser's own localStorage rather than
+  // Anthropic's artifact-only window.storage API. localStorage is synchronous,
+  // but we keep the same async get/set/delete(key, shared) shape the rest of
+  // the app already expects, so nothing else has to change. "shared" has no
+  // meaning for a single local browser, so it's accepted but ignored.
+  const LOCAL_STORAGE_PREFIX = 'whiskerWorks:';
+
+  function localStorageKey(key){ return LOCAL_STORAGE_PREFIX + key; }
+
+  function localStorageAvailable(){
+    try {
+      const testKey = LOCAL_STORAGE_PREFIX + '__test__';
+      window.localStorage.setItem(testKey, '1');
+      window.localStorage.removeItem(testKey);
+      return true;
+    } catch(e){ return false; }
+  }
+
+  const storage = {
+    async get(key){
+      const raw = window.localStorage.getItem(localStorageKey(key));
+      if (raw === null) return null;
+      return { key, value: raw };
+    },
+    async set(key, value){
+      window.localStorage.setItem(localStorageKey(key), value);
+      return { key, value };
+    },
+    async delete(key){
+      window.localStorage.removeItem(localStorageKey(key));
+      return { key, deleted: true };
+    }
+  };
+
+  // Defensively normalize a loaded cats-index array so a single malformed/legacy
+  // entry (e.g. missing name or id) can never crash sorting or saving later on.
+  function sanitizeIndexEntry(c){
+    if (!c || typeof c !== 'object') return null;
+    if (!c.id) return null;
+    return Object.assign({}, c, { name: (c.name || 'Unnamed Cat') });
+  }
+
+  async function fetchIndex(){
+    try {
+      const res = await storage.get('cats-index');
+      const raw = (res && res.value) ? JSON.parse(res.value) : [];
+      return Array.isArray(raw) ? raw.map(sanitizeIndexEntry).filter(Boolean) : [];
+    } catch(e){ return []; }
+  }
+
+  async function persistIndex(){
+    try {
+      indexCache = indexCache.map(sanitizeIndexEntry).filter(Boolean);
+      indexCache.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      await storage.set('cats-index', JSON.stringify(indexCache));
+      const check = await storage.get('cats-index');
+      if (!check || !check.value) throw new Error('Cat list did not persist to storage');
+    } catch(e){ showToast('Could not save your cat list. Try again.', 'error'); }
+  }
+
+  // Defensively normalize a loaded banners-index array, same reasoning as
+  // sanitizeIndexEntry above.
+  function sanitizeBannerEntry(b){
+    if (!b || typeof b !== 'object') return null;
+    if (!b.id) return null;
+    return Object.assign({}, b, { name: (b.name || 'Untitled Banner') });
+  }
+
+  async function fetchBanners(){
+    let list = [];
+    try {
+      const res = await storage.get('banners-index');
+      const raw = (res && res.value) ? JSON.parse(res.value) : [];
+      list = Array.isArray(raw) ? raw.map(sanitizeBannerEntry).filter(Boolean) : [];
+    } catch(e){ list = []; }
+    // No default banner is auto-created anymore — the list starts empty (or
+    // with whatever the user has already made) and only "+ New Banner" is
+    // offered to create one. MY_BANNER_ID/MY_BANNER_NAME remain as a display
+    // fallback (see bannerName below) for cats that aren't assigned to any
+    // banner, without an actual stored banner entry backing them.
+    return list;
+  }
+
+  async function persistBanners(){
+    try {
+      bannersCache = bannersCache.map(sanitizeBannerEntry).filter(Boolean);
+      await storage.set('banners-index', JSON.stringify(bannersCache));
+      const check = await storage.get('banners-index');
+      if (!check || !check.value) throw new Error('Banner list did not persist to storage');
+    } catch(e){ showToast('Could not save your banners. Try again.', 'error'); }
+  }
+
+  function bannerName(id){
+    const b = bannersCache.find(x => x.id === id);
+    return b ? b.name : MY_BANNER_NAME;
+  }
+
+  async function fetchCatFull(id){
+    if (catsCache[id]) return catsCache[id];
+    try {
+      const res = await storage.get('cat:' + id);
+      const cat = (res && res.value) ? JSON.parse(res.value) : null;
+      if (cat){
+        cat.forms.forEach(migrateForm);
+        catsCache[id] = cat;
+      }
+      return cat;
+    } catch(e){ return null; }
+  }
+
+  async function persistCat(cat){
+    await storage.set('cat:' + cat.id, JSON.stringify(cat));
+    // Read the write back to actually confirm it landed — a truthy return from
+    // set() isn't proof the value round-trips, so verify against storage itself.
+    const check = await storage.get('cat:' + cat.id);
+    if (!check || !check.value) throw new Error('Cat did not persist to storage');
+    catsCache[cat.id] = cat;
+  }
+
+  async function removeCatStorage(id){
+    try { await storage.delete('cat:' + id); } catch(e){ /* already gone */ }
+    delete catsCache[id];
+  }
+
+  /* ============================= Export / Import ============================= */
+  // Lets a user download their cats/banners as a JSON file and hand it to a
+  // friend, who imports it back in on their own device. Three file "shapes"
+  // are supported (single cat, single banner + its cats, full collection),
+  // each tagged with a `type` field so importing auto-detects which one it is
+  // regardless of which of the three Import buttons was used to pick the file.
+
+  function downloadJsonFile(filename, dataObj){
+    try {
+      const json = JSON.stringify(dataObj, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch(e){
+      showToast('Could not create the export file.', 'error');
+    }
+  }
+
+  function safeFileName(name){
+    return (name || 'untitled').toString().trim().replace(/[^a-z0-9\-_ ]/gi, '').replace(/\s+/g, '-').slice(0, 60) || 'untitled';
+  }
+
+  function readJsonFile(file){
+    return new Promise((resolve, reject) => {
+      if (!file){ reject(new Error('No file selected.')); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        try { resolve(JSON.parse(e.target.result)); }
+        catch(err){ reject(new Error('That file isn\u2019t valid JSON.')); }
+      };
+      reader.onerror = () => reject(new Error('Could not read that file.'));
+      reader.readAsText(file);
+    });
+  }
+
+  // A cat's banner is stored locally by id, which means nothing on a friend's
+  // device — so exports carry the banner *name* instead, and importing looks
+  // up (or creates) a local banner with that name.
+  async function findOrCreateBannerByName(name){
+    const clean = (name || '').trim();
+    if (!clean || clean === MY_BANNER_NAME) return MY_BANNER_ID;
+    const existing = bannersCache.find(b => b.name.toLowerCase() === clean.toLowerCase());
+    if (existing) return existing.id;
+    const banner = { id: uid('banner'), name: clean };
+    bannersCache.push(banner);
+    await persistBanners();
+    renderBannerFilterSelect();
+    return banner.id;
+  }
+
+  // Strips the pieces of a full cat record that are only meaningful on this
+  // device (local id, local banner id) so the exported file is portable.
+  function catExportPayload(cat){
+    return {
+      name: cat.name,
+      rarity: cat.rarity,
+      bannerName: bannerName(cat.bannerId || MY_BANNER_ID),
+      formCount: cat.formCount,
+      forms: cat.forms
+    };
+  }
+
+  // Rebuilds a full local cat record (with a fresh id, so it never collides
+  // with anything already saved) from an imported payload.
+  async function catFromImportPayload(payload){
+    const bannerId = await findOrCreateBannerByName(payload.bannerName);
+    const forms = Array.isArray(payload.forms) && payload.forms.length ? payload.forms.map(migrateForm) : [blankForm(0)];
+    return {
+      id: uid(),
+      name: (payload.name || 'Imported Cat').toString(),
+      rarity: RARITY_MAP[payload.rarity] ? payload.rarity : 'normal',
+      bannerId,
+      formCount: payload.formCount || forms.length,
+      forms
+    };
+  }
+
+  // Persists an imported cat and adds it to the in-memory index (list view
+  // refresh + save-to-storage happens afterward, in finishImport).
+  async function importCatRecord(cat){
+    await persistCat(cat);
+    let thumb = null;
+    if (cat.forms[0] && cat.forms[0].image){
+      try { thumb = await resizeDataUrl(cat.forms[0].image, 110, 0.75); } catch(e){ thumb = null; }
+    }
+    indexCache.push({ id: cat.id, name: cat.name, rarity: cat.rarity, bannerId: cat.bannerId || MY_BANNER_ID, formCount: cat.formCount, thumb });
+  }
+
+  async function finishImport(count, noun){
+    await persistIndex();
+    indexCache = await fetchIndex();
+    renderList();
+    updateCompareTabBadge();
+    showToast(count + ' ' + noun + (count === 1 ? '' : 's') + ' imported!');
+  }
+
+  async function exportSingleCat(id){
+    const cat = await fetchCatFull(id);
+    if (!cat){ showToast('Could not load that cat to export.', 'error'); return; }
+    downloadJsonFile(
+      'whisker-works-cat-' + safeFileName(cat.name) + '.json',
+      { type: 'whisker-works-cat', version: 1, cat: catExportPayload(cat) }
+    );
+  }
+
+  async function exportBanner(bannerId){
+    if (!bannerId || bannerId === 'all'){ showToast('Pick a specific banner first.', 'error'); return; }
+    const name = bannerName(bannerId);
+    const catsInBanner = indexCache.filter(c => (c.bannerId || MY_BANNER_ID) === bannerId);
+    const fullCats = [];
+    for (const c of catsInBanner){
+      const full = await fetchCatFull(c.id);
+      if (full) fullCats.push(catExportPayload(full));
+    }
+    downloadJsonFile(
+      'whisker-works-banner-' + safeFileName(name) + '.json',
+      { type: 'whisker-works-banner', version: 1, banner: { name }, cats: fullCats }
+    );
+  }
+
+  async function exportAll(){
+    const fullCats = [];
+    for (const c of indexCache){
+      const full = await fetchCatFull(c.id);
+      if (full) fullCats.push(catExportPayload(full));
+    }
+    downloadJsonFile(
+      'whisker-works-export-' + new Date().toISOString().slice(0, 10) + '.json',
+      { type: 'whisker-works-full-export', version: 1, banners: bannersCache.map(b => ({ name: b.name })), cats: fullCats }
+    );
+  }
+
+  async function applyCatImport(data){
+    const payload = data.cat;
+    if (!payload || !Array.isArray(payload.forms)) throw new Error('That doesn\u2019t look like a Whisker Works cat file.');
+    const cat = await catFromImportPayload(payload);
+    await importCatRecord(cat);
+    await finishImport(1, 'cat');
+  }
+
+  async function applyBannerImport(data){
+    if (!data.banner || !data.banner.name) throw new Error('That doesn\u2019t look like a Whisker Works banner file.');
+    const bannerId = await findOrCreateBannerByName(data.banner.name);
+    const cats = Array.isArray(data.cats) ? data.cats : [];
+    for (const payload of cats){
+      const cat = await catFromImportPayload(payload);
+      cat.bannerId = bannerId;
+      await importCatRecord(cat);
+    }
+    await finishImport(cats.length, 'cat');
+  }
+
+  async function applyFullImport(data){
+    for (const b of (Array.isArray(data.banners) ? data.banners : [])){
+      if (b && b.name) await findOrCreateBannerByName(b.name);
+    }
+    const cats = Array.isArray(data.cats) ? data.cats : [];
+    for (const payload of cats){
+      const cat = await catFromImportPayload(payload);
+      await importCatRecord(cat);
+    }
+    await finishImport(cats.length, 'cat');
+  }
+
+  // Dispatches by the file's own `type` field rather than which Import button
+  // was clicked, so any of the three exported file shapes works from any of
+  // the three Import inputs.
+  async function handleImportFile(file){
+    try {
+      const data = await readJsonFile(file);
+      const type = data && data.type;
+      if (type === 'whisker-works-cat') await applyCatImport(data);
+      else if (type === 'whisker-works-banner') await applyBannerImport(data);
+      else if (type === 'whisker-works-full-export') await applyFullImport(data);
+      else throw new Error('That doesn\u2019t look like a Whisker Works export file.');
+    } catch(err){
+      console.error('Whisker Works import failed:', err);
+      showToast(err.message || 'Could not import that file.', 'error');
+    }
+  }
+
+  /* ============================= DPS & trait effectiveness ============================= */
+
+  // Attack Cycle = Time Between Attacks + Attack Animation (both seconds). DPS = Damage / Attack Cycle.
+  function attackCycleOf(f){
+    return (Number(f.stats.tba) || 0) + (Number(f.stats.animTime) || 0);
+  }
+
+  function baseDps(f){
+    const cycle = attackCycleOf(f);
+    return cycle > 0 ? (Number(f.stats.ap) || 0) / cycle : null;
+  }
+
+  // A form "qualifies" for the Effective bonus once it has at least one damage-dealing trait
+  // effect (Strong Against, Massive Damage, or Insane Damage) added.
+  function isEffectiveQualified(f){
+    return !!(f && Array.isArray(f.traitEffects) && f.traitEffects.some(e => (TRAIT_ABILITY_MAP[e.ability] || {}).kind === 'offense'));
+  }
+
+  // The level that a form's entered stats represent. Defaults to the form slot's usual
+  // starting level (Normal=1, Evolved=10, True=30, Ultra=60 — see FORM_LEVELS below) but can
+  // be overridden per-form via f.baseLevel, e.g. if a cat's Evolved form was written down at
+  // Level 15 instead of 10.
+  function formBaseLevel(f, idx){
+    const custom = f && f.baseLevel;
+    if (custom !== null && custom !== undefined && custom !== '') return Math.max(1, Number(custom) || 1);
+    return FORM_LEVELS[idx] || 1;
+  }
+
+  function apAtLevel(f, idx, level){
+    const base = formBaseLevel(f, idx);
+    return (Number(f.stats.ap) || 0) + (Number(f.dmgGrowth) || 0) * ((level || base) - base);
+  }
+
+  function dpsAtLevel(f, idx, level){
+    const cycle = attackCycleOf(f);
+    return cycle > 0 ? apAtLevel(f, idx, level) / cycle : null;
+  }
+
+  /* ============================= Data model ============================= */
+
+  function blankForm(index){
+    return {
+      label: FORM_LABELS[index],
+      image: null,
+      targetType: 'single',
+      rangeModifier: 'none',
+      stats: { hp:'', ap:'', dps:'', range:'', rangeOmni:'', rangeBlindspot:'', rangeStandingRange:'', speed:'', kb:'', tba:'', animTime:'', recharge:'', cost:'' },
+      hpGrowth: '',
+      dmgGrowth: '',
+      description: '',
+      abilities: [],
+      immunities: [],
+      conjure: { name:'', damage:'', abilities:[] },
+      talents: [],
+      ultraTalents: [],
+      traitEffects: [],
+      previewLevel: null,
+      baseLevel: null,
+      // Requirements to evolve INTO this form (irrelevant for index 0 / Normal form).
+      evolveReq: { materials: [], xp: '', level: '' }
+    };
+  }
+
+  function blankCat(){
+    return { id:null, name:'', rarity:'normal', bannerId:MY_BANNER_ID, formCount:1, forms:[blankForm(0)] };
+  }
+
+  // Brings forms saved under the old schema (flat `talent`/`ultraTalent`/`ability` text, no trait
+  // targeting) up to date in place.
+  function migrateForm(f){
+    if (!f.stats) f.stats = {};
+    if (f.stats.tba === undefined) f.stats.tba = '';
+    if (f.stats.animTime === undefined) f.stats.animTime = '';
+    if (f.stats.dps === undefined) f.stats.dps = '';
+    // Attack Type used to be one combined dropdown (Single Target / Area Attack / Omni Strike /
+    // Long Distance). It's now two independent choices: Target Type (single/area) and Range
+    // Modifier (none/omni/longdistance), since a cat can be e.g. an Area Attack with Long
+    // Distance at the same time.
+    if (f.targetType === undefined || f.rangeModifier === undefined){
+      const legacy = f.attackType;
+      if (legacy === 'area'){ f.targetType = 'area'; f.rangeModifier = 'none'; }
+      else if (legacy === 'omni'){ f.targetType = 'single'; f.rangeModifier = 'omni'; }
+      else if (legacy === 'longdistance'){ f.targetType = 'single'; f.rangeModifier = 'longdistance'; }
+      else { f.targetType = 'single'; f.rangeModifier = 'none'; }
+    }
+    if (!TARGET_TYPE_MAP[f.targetType]) f.targetType = 'single';
+    if (!RANGE_MODIFIER_MAP[f.rangeModifier]) f.rangeModifier = 'none';
+    delete f.attackType;
+    EXTRA_RANGE_STAT_KEYS.forEach(key => { if (f.stats[key] === undefined) f.stats[key] = ''; });
+
+    // Evolve Requirements: materials (+ amounts) and an optional XP cost needed to evolve
+    // INTO this form. Older saves have no such object yet.
+    if (!f.evolveReq || typeof f.evolveReq !== 'object') f.evolveReq = { materials: [], xp: '', level: '' };
+    if (!Array.isArray(f.evolveReq.materials)) f.evolveReq.materials = [];
+    f.evolveReq.materials = f.evolveReq.materials.filter(e => e && MATERIAL_MAP[e.key]);
+    if (f.evolveReq.xp === undefined) f.evolveReq.xp = '';
+    if (f.evolveReq.level === undefined) f.evolveReq.level = '';
+    if (!Array.isArray(f.talents)){
+      const legacy = (f.talent || '').trim();
+      f.talents = (legacy && legacy.toLowerCase() !== 'none') ? [{ icon:null, name:legacy, cost:'' }] : [];
+    }
+    delete f.talent;
+
+    // Target Trait used to be a single dropdown + "Strong Against" checkbox, then a flat list of
+    // traits (all implicitly "Strong Against"), then a list of {ability, trait} pairs (one trait
+    // per entry). It's now a list of {ability, traits:[...]} entries, since one effect can now
+    // target several traits at once (e.g. Strong Against Red + Floating in a single entry).
+    if (!Array.isArray(f.traitEffects)){
+      if (Array.isArray(f.strongTraits)){
+        f.traitEffects = f.strongTraits.map(t => ({ ability:'strong_against', traits:[t] }));
+      } else if (f.strongAgainst && f.targetTrait && f.targetTrait !== 'none'){
+        f.traitEffects = [{ ability:'strong_against', traits:[f.targetTrait] }];
+      } else {
+        f.traitEffects = [];
+      }
+    }
+    delete f.strongTraits;
+    delete f.targetTrait;
+    delete f.strongAgainst;
+
+    // Normalize any entry still carrying the old singular `trait` field into `traits`.
+    f.traitEffects = f.traitEffects.filter(Boolean).map(e => {
+      if (!Array.isArray(e.traits)) e.traits = e.trait ? [e.trait] : [];
+      delete e.trait;
+      return e;
+    });
+
+    if (f.previewLevel === undefined) f.previewLevel = null;
+
+    // Older saves have no concept of a "base level" — the level the entered stats represent.
+    // They implicitly assumed every form's stats were Level 1 stats, which is exactly the bug
+    // being fixed here. Leaving this null makes the form fall back to its slot's default base
+    // level (Normal=1, Evolved=10, True=30, Ultra=60) rather than silently reinterpreting old
+    // data — the JSON stays fully compatible, and the user can override per-form afterward.
+    if (f.baseLevel === undefined) f.baseLevel = null;
+
+    // Ultra Talent used to be a single free-text box; it now uses the same add-a-row list as Talents.
+    if (!Array.isArray(f.ultraTalents)){
+      const legacyUltra = (f.ultraTalent || '').trim();
+      f.ultraTalents = (legacyUltra && legacyUltra.toLowerCase() !== 'none') ? [{ icon:null, name:legacyUltra, cost:'' }] : [];
+    }
+    delete f.ultraTalent;
+
+    // Ability used to be a free-text box; it now only holds picks from the Neutral Abilities list.
+    // Best-effort match the old text against a known ability name; anything else is dropped since
+    // the new box can only represent abilities from that list.
+    if (!Array.isArray(f.abilities)){
+      const legacyAbility = (f.ability || '').trim().toLowerCase();
+      const match = (legacyAbility && legacyAbility !== 'none')
+        ? NEUTRAL_ABILITIES.find(a => a.label.toLowerCase() === legacyAbility)
+        : null;
+      f.abilities = match ? [{ key: match.key }] : [];
+    }
+    delete f.ability;
+
+    // Neutral Abilities moved from a flat list of keys to a list of {key, ...fields} entries
+    // so abilities like Strengthen and Survive can carry their own values. Wrap any leftover
+    // plain-string entries, and drop anything that no longer exists in the current list.
+    const validKeys = NEUTRAL_ABILITIES.map(a => a.key);
+    f.abilities = f.abilities
+      .map(e => (typeof e === 'string') ? { key: e } : e)
+      .filter(e => e && validKeys.includes(e.key));
+
+    // Immunities: a separate flat list (Immune to Freeze, Slow, Weaken, etc).
+    const validImmunityKeys = IMMUNITY_ABILITIES.map(a => a.key);
+    if (!Array.isArray(f.immunities)) f.immunities = [];
+    f.immunities = f.immunities.filter(k => validImmunityKeys.includes(k));
+
+    // Conjure: when present, the form can define a "conjured" little cat with its own
+    // damage and abilities. Older saves have no such object yet.
+    if (!f.conjure || typeof f.conjure !== 'object'){
+      f.conjure = { name:'', damage:'', abilities:[] };
+    }
+    if (!Array.isArray(f.conjure.abilities)) f.conjure.abilities = [];
+    f.conjure.abilities = f.conjure.abilities
+      .map(e => (typeof e === 'string') ? { key: e } : e)
+      .filter(e => e && e.key !== 'conjure' && validKeys.includes(e.key));
+    if (f.conjure.name === undefined) f.conjure.name = '';
+    if (f.conjure.damage === undefined) f.conjure.damage = '';
+
+    return f;
+  }
+
+  function formHasData(f){
+    if (f.image) return true;
+    if (f.description && f.description.trim() && f.description.trim().toLowerCase() !== 'none') return true;
+    if (f.abilities && f.abilities.length) return true;
+    if (f.immunities && f.immunities.length) return true;
+    if (f.conjure && ((f.conjure.name || '').trim() || (f.conjure.damage !== '' && f.conjure.damage != null) || (f.conjure.abilities && f.conjure.abilities.length))) return true;
+    if (f.talents && f.talents.length) return true;
+    if (f.ultraTalents && f.ultraTalents.length) return true;
+    if (STAT_FIELDS.some(sf => f.stats[sf.key] !== '' && f.stats[sf.key] !== null && f.stats[sf.key] !== undefined)) return true;
+    if (f.hpGrowth !== '' && f.hpGrowth != null) return true;
+    if (f.dmgGrowth !== '' && f.dmgGrowth != null) return true;
+    if (f.traitEffects && f.traitEffects.length) return true;
+    if (f.evolveReq && ((f.evolveReq.materials && f.evolveReq.materials.length) || (f.evolveReq.xp !== '' && f.evolveReq.xp != null) || (f.evolveReq.level !== '' && f.evolveReq.level != null))) return true;
+    return false;
+  }
+
+  /* ============================= View switching ============================= */
+
+  function showView(name){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.tab-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+    if (name === 'list') renderList();
+    if (name === 'compare') renderCompare();
+  }
+
+  function updateCompareTabBadge(){
+    const btn = document.getElementById('compareTabBtn');
+    btn.textContent = 'Compare' + (compareIds.length ? ' (' + compareIds.length + ')' : '');
+  }
+
+  /* ============================= Toast & Modal ============================= */
+
+  function showToast(msg, type){
+    const root = document.getElementById('toastRoot');
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'error' ? ' error' : '');
+    el.textContent = msg;
+    root.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 2600);
+  }
+
+  function openModal(opts){
+    const root = document.getElementById('modalRoot');
+    root.innerHTML =
+      '<div class="modal-overlay"><div class="modal-box">' +
+        '<h3>' + esc(opts.title) + '</h3>' +
+        '<div class="modal-body">' + opts.body + '</div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" class="btn ghost" id="modalCancel">' + esc(opts.cancelLabel || 'Cancel') + '</button>' +
+          '<button type="button" class="btn ' + (opts.danger ? 'danger' : 'accent') + '" id="modalConfirm">' + esc(opts.confirmLabel || 'Confirm') + '</button>' +
+        '</div>' +
+      '</div></div>';
+
+    function close(){ root.innerHTML = ''; }
+
+    root.querySelector('#modalCancel').addEventListener('click', () => { close(); if (opts.onCancel) opts.onCancel(); });
+    root.querySelector('.modal-overlay').addEventListener('click', e => {
+      if (e.target.classList.contains('modal-overlay')) { close(); if (opts.onCancel) opts.onCancel(); }
+    });
+    root.querySelector('#modalConfirm').addEventListener('click', async () => { close(); if (opts.onConfirm) await opts.onConfirm(); });
+
+    return { close, root };
+  }
+
+  /* ============================= List view ============================= */
+
+  function getFilteredIndex(){
+    return indexCache.filter(c => {
+      const matchesSearch = !searchTerm || c.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRarity = rarityFilter === 'all' || c.rarity === rarityFilter;
+      const matchesBanner = bannerFilter === 'all' || (c.bannerId || MY_BANNER_ID) === bannerFilter;
+      return matchesSearch && matchesRarity && matchesBanner;
+    });
+  }
+
+  function emptyStateHtml(){
+    if (indexCache.length === 0){
+      return '<div class="empty-state">' +
+        '<div class="empty-icon">' + pawSVG() + '</div>' +
+        '<h3>No cats yet</h3>' +
+        '<p>Create your first custom cat unit to get started.</p>' +
+        '<button type="button" class="btn accent" id="emptyCreateBtn">+ New Cat</button>' +
+      '</div>';
+    }
+    return '<div class="empty-state">' +
+      '<div class="empty-icon">' + pawSVG() + '</div>' +
+      '<h3>No matches</h3>' +
+      '<p>Try a different search, banner, or rarity filter.</p>' +
+      '<button type="button" class="btn ghost" id="clearFiltersBtn">Clear filters</button>' +
+    '</div>';
+  }
+
+  function cardHtml(c){
+    const thumb = c.thumb ? '<img src="' + c.thumb + '" alt="">' : pawSVG();
+    const inCompare = compareIds.includes(c.id);
+    return '<article class="cat-card" data-id="' + c.id + '">' +
+      '<div class="card-band" style="background:' + rarityBg(c.rarity) + '"></div>' +
+      '<div class="card-thumb">' + thumb + '</div>' +
+      '<h3 class="card-name">' + esc(c.name) + '</h3>' +
+      '<div class="card-meta">' +
+        '<span class="rarity-pill" style="background:' + rarityBg(c.rarity) + '">' + esc(RARITY_MAP[c.rarity].label) + '</span>' +
+        '<span class="banner-tag">' + esc(bannerName(c.bannerId || MY_BANNER_ID)) + '</span>' +
+        '<span class="form-count-tag">' + c.formCount + ' form' + (c.formCount > 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<div class="card-actions">' +
+        '<button type="button" class="btn small" data-action="edit" data-id="' + c.id + '">Edit</button>' +
+        '<button type="button" class="btn small ' + (inCompare ? 'active' : '') + '" data-action="toggle-compare" data-id="' + c.id + '">' + (inCompare ? '✓ Comparing' : '+ Compare') + '</button>' +
+        '<button type="button" class="btn small ghost" data-action="export" data-id="' + c.id + '">Export</button>' +
+        '<button type="button" class="btn small ghost danger" data-action="delete" data-id="' + c.id + '">Delete</button>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function renderList(){
+    const grid = document.getElementById('catGrid');
+    const list = getFilteredIndex();
+    grid.innerHTML = list.length ? list.map(cardHtml).join('') : emptyStateHtml();
+
+    const ec = document.getElementById('emptyCreateBtn');
+    if (ec) ec.addEventListener('click', () => openEditor(null));
+    const cf = document.getElementById('clearFiltersBtn');
+    if (cf) cf.addEventListener('click', () => {
+      searchTerm = ''; rarityFilter = 'all'; bannerFilter = 'all';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('rarityFilterSelect').value = 'all';
+      document.getElementById('bannerFilterSelect').value = 'all';
+      renderList();
+    });
+  }
+
+  function confirmDeleteCat(id){
+    const c = indexCache.find(x => x.id === id);
+    if (!c) return;
+    openModal({
+      title: 'Delete cat?',
+      body: '<p>This will permanently delete <strong>' + esc(c.name) + '</strong>. This can\'t be undone.</p>',
+      confirmLabel: 'Delete',
+      danger: true,
+      onConfirm: async () => {
+        await removeCatStorage(id);
+        indexCache = indexCache.filter(x => x.id !== id);
+        await persistIndex();
+        compareIds = compareIds.filter(x => x !== id);
+        updateCompareTabBadge();
+        showView('list');
+        showToast('Deleted ' + c.name + '.');
+      }
+    });
+  }
+
+  function toggleCompareSelection(id, alsoRenderList){
+    const i = compareIds.indexOf(id);
+    if (i >= 0) compareIds.splice(i, 1); else compareIds.push(id);
+    if (compareFormIdx[id] === undefined) compareFormIdx[id] = 0;
+    updateCompareTabBadge();
+    if (alsoRenderList) renderList();
+  }
+
+  /* ============================= Compare view ============================= */
+
+  async function renderCompare(){
+    const wrap = document.getElementById('compareGrid');
+    if (compareIds.length === 0){
+      wrap.innerHTML = '<div class="empty-state">' +
+        '<div class="empty-icon">' + pawSVG() + '</div>' +
+        '<h3>Nothing to compare yet</h3>' +
+        '<p>Add a couple of cats to see their stats side by side.</p>' +
+        '<button type="button" class="btn accent" id="emptyAddCompareBtn">+ Add cats to compare</button>' +
+      '</div>';
+      const b = document.getElementById('emptyAddCompareBtn');
+      if (b) b.addEventListener('click', openComparePickerModal);
+      return;
+    }
+    wrap.innerHTML = '<div class="loading-msg">Loading comparison…</div>';
+    const cats = [];
+    for (const id of compareIds){
+      const c = await fetchCatFull(id);
+      if (c) cats.push(c);
+    }
+    wrap.innerHTML = buildCompareTable(cats);
+    bindCompareEvents(wrap);
+  }
+
+  function talentChipHtml(t){
+    const icon = t.icon ? '<img src="' + t.icon + '" alt="">' : '★';
+    const cost = (t.cost !== '' && t.cost !== null && t.cost !== undefined) ? (Number(t.cost).toLocaleString() + ' NP') : '';
+    return '<span class="talent-chip"><span class="talent-chip-icon">' + icon + '</span>' + esc(t.name || 'Talent') + (cost ? ' <span class="talent-chip-cost">' + esc(cost) + '</span>' : '') + '</span>';
+  }
+
+  function dpsCellHtml(catId, form, formIdx, level){
+    const apBase = Number(form.stats.ap) || 0;
+    const growth = Number(form.dmgGrowth) || 0;
+    const baseLevel = formBaseLevel(form, formIdx);
+    const cycle = attackCycleOf(form);
+    const qualifies = isEffectiveQualified(form);
+    const dealtMult = bestDealtMultiplier(form);
+    const attrs = 'data-dpscell="' + catId + '" data-ap-base="' + apBase + '" data-growth="' + growth + '" data-base-level="' + baseLevel + '" data-cycle="' + cycle + '" data-qualifies="' + (qualifies ? 1 : 0) + '" data-dealt-mult="' + dealtMult + '"';
+    if (!cycle) return '<td><span class="stat-at-level" ' + attrs + '>—</span></td>';
+    let val = apBase + growth * (level - baseLevel);
+    val = val / cycle;
+    let suffix = '';
+    if (compareEffectiveOn && qualifies){ val *= dealtMult; suffix = '*'; }
+    return '<td><span class="stat-at-level" ' + attrs + '>' + formatDps(val) + suffix + '</span></td>';
+  }
+
+  function buildCompareTable(cats){
+    const headerCells = cats.map(c => {
+      const fi = compareFormIdx[c.id] || 0;
+      const form = c.forms[fi] || c.forms[0];
+      const img = form.image ? '<img src="' + form.image + '" alt="">' : pawSVG();
+      const pills = c.forms.map((f, i) => {
+        const fc = FORM_COLORS[i] || FORM_COLORS[0];
+        const style = 'style="--form-color:' + fc.bg + '; --form-text:' + fc.text + '; --form-border:' + fc.border + '"';
+        const label = formLabelAt(c, i);
+        return '<button type="button" class="form-pill ' + (i === fi ? 'active' : '') + '" data-id="' + c.id + '" data-idx="' + i + '" ' + style + ' title="' + esc(label) + '">' + esc(label) + '</button>';
+      }).join('');
+      const shownLevel = compareLevel[c.id] || formBaseLevel(form, fi);
+      return '<th class="col-head">' +
+        '<button type="button" class="col-remove" data-remove="' + c.id + '" title="Remove from comparison">×</button>' +
+        '<div class="col-band" style="background:' + rarityBg(c.rarity) + '; width:70%"></div>' +
+        '<div class="col-img">' + img + '</div>' +
+        '<div class="col-name">' + esc(c.name) + '</div>' +
+        '<div class="col-rarity-label">' + esc(RARITY_MAP[c.rarity].label) + '</div>' +
+        '<div class="form-switch">' + pills + '</div>' +
+        '<label class="col-level">Lvl <input type="number" min="1" max="9999" value="' + shownLevel + '" data-level="' + c.id + '"></label>' +
+      '</th>';
+    }).join('');
+
+    const statRows = STAT_FIELDS.map(sf => {
+      const cells = cats.map(c => {
+        const fi = compareFormIdx[c.id] || 0;
+        const form = c.forms[fi] || c.forms[0];
+        const baseLevel = formBaseLevel(form, fi);
+        const lvl = compareLevel[c.id] || baseLevel;
+
+        if (sf.key === 'dps') return dpsCellHtml(c.id, form, fi, lvl);
+
+        const base = Number(form.stats[sf.key]) || 0;
+        if (sf.key === 'hp' || sf.key === 'ap'){
+          const growthKey = sf.key === 'hp' ? 'hpGrowth' : 'dmgGrowth';
+          const growth = Number(form[growthKey]) || 0;
+
+          // "Effective" scales AP by the strongest damage-dealt trait bonus (Strong Against,
+          // Massive/Insane Damage), and scales HP by the inverse of the best damage-taken
+          // bonus — same multipliers the editor's "Effective dmg/HP" preview uses.
+          let mult = 1, qualifies = false;
+          if (sf.key === 'ap'){
+            qualifies = isEffectiveQualified(form);
+            mult = qualifies ? bestDealtMultiplier(form) : 1;
+          } else {
+            const taken = bestTakenMultiplier(form);
+            qualifies = taken !== null && taken > 0;
+            mult = qualifies ? (1 / taken) : 1;
+          }
+
+          let val = base + growth * (lvl - baseLevel);
+          let suffix = '';
+          if (compareEffectiveOn && qualifies){ val *= mult; suffix = '*'; }
+          const shown = Math.round(val);
+          return '<td><span class="stat-at-level" data-statcell="' + c.id + '" data-base="' + base + '" data-growth="' + growth + '" data-base-level="' + baseLevel + '" data-mult="' + mult + '" data-qualifies="' + (qualifies ? 1 : 0) + '">' + formatNum(shown) + suffix + '</span></td>';
+        }
+        return '<td>' + formatNum(base) + '</td>';
+      }).join('');
+      return '<tr><th class="row-label">' + esc(sf.label) + '</th>' + cells + '</tr>';
+    }).join('');
+
+    const textRows = [
+      ['description', 'Description', 'text'],
+      ['traitEffects', 'Trait Effects', 'traits'],
+      ['abilities', 'Neutral Abilities', 'abilities'],
+      ['immunities', 'Immunities', 'immunities'],
+      ['talents', 'Talents', 'talents'],
+      ['ultraTalents', 'Ultra Talents', 'talents']
+    ].map(row => {
+      const key = row[0], label = row[1], kind = row[2];
+      const cells = cats.map(c => {
+        const fi = compareFormIdx[c.id] || 0;
+        const form = c.forms[fi] || c.forms[0];
+        if (kind === 'talents'){
+          const list = form[key] || [];
+          return '<td class="text-cell">' + (list.length ? list.map(talentChipHtml).join('') : 'None') + '</td>';
+        }
+        if (kind === 'abilities'){
+          const list = form.abilities || [];
+          return '<td class="text-cell">' + (list.length ? list.map(e => esc(abilityEntryLabel(e))).join(', ') : 'None') + '</td>';
+        }
+        if (kind === 'immunities'){
+          const list = form.immunities || [];
+          return '<td class="text-cell">' + (list.length ? list.map(k => esc(immunityLabel(k))).join(', ') : 'None') + '</td>';
+        }
+        if (kind === 'traits'){
+          const list = form.traitEffects || [];
+          return '<td class="text-cell">' + (list.length ? list.map(e => esc(traitEffectLabel(e))).join(', ') : 'None') + '</td>';
+        }
+        return '<td class="text-cell">' + esc(form[key] || 'None') + '</td>';
+      }).join('');
+      return '<tr><th class="row-label">' + label + '</th>' + cells + '</tr>';
+    }).join('');
+
+    return '<div class="table-scroll"><table class="compare-table">' +
+      '<thead><tr><th class="row-label corner"></th>' + headerCells + '</tr></thead>' +
+      '<tbody>' + statRows + textRows + '</tbody>' +
+    '</table></div>';
+  }
+
+  function recomputeLevelCells(wrap, id, level){
+    wrap.querySelectorAll('[data-statcell="' + id + '"]').forEach(span => {
+      const base = Number(span.dataset.base) || 0;
+      const growth = Number(span.dataset.growth) || 0;
+      const baseLevel = span.dataset.baseLevel !== undefined ? (Number(span.dataset.baseLevel) || 1) : 1;
+      const mult = span.dataset.mult !== undefined ? (Number(span.dataset.mult) || 1) : 1;
+      const qualifies = span.dataset.qualifies === '1';
+      let val = base + growth * (level - baseLevel);
+      let suffix = '';
+      if (compareEffectiveOn && qualifies){ val *= mult; suffix = '*'; }
+      span.textContent = formatNum(Math.round(val)) + suffix;
+    });
+    wrap.querySelectorAll('[data-dpscell="' + id + '"]').forEach(span => {
+      const apBase = Number(span.dataset.apBase) || 0;
+      const growth = Number(span.dataset.growth) || 0;
+      const baseLevel = span.dataset.baseLevel !== undefined ? (Number(span.dataset.baseLevel) || 1) : 1;
+      const cycle = Number(span.dataset.cycle) || 0;
+      const qualifies = span.dataset.qualifies === '1';
+      const dealtMult = Number(span.dataset.dealtMult) || 1;
+      if (!cycle){ span.textContent = '—'; return; }
+      let val = (apBase + growth * (level - baseLevel)) / cycle;
+      let suffix = '';
+      if (compareEffectiveOn && qualifies){ val *= dealtMult; suffix = '*'; }
+      span.textContent = formatDps(val) + suffix;
+    });
+  }
+
+  function bindCompareEvents(wrap){
+    wrap.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.remove;
+      compareIds = compareIds.filter(x => x !== id);
+      updateCompareTabBadge();
+      renderCompare();
+      renderList();
+    }));
+    wrap.querySelectorAll('.form-pill').forEach(b => b.addEventListener('click', () => {
+      compareFormIdx[b.dataset.id] = Number(b.dataset.idx);
+      renderCompare();
+    }));
+    wrap.querySelectorAll('[data-level]').forEach(inp => inp.addEventListener('input', () => {
+      const id = inp.dataset.level;
+      const level = Math.max(1, Number(inp.value) || 1);
+      compareLevel[id] = level;
+      recomputeLevelCells(wrap, id, level);
+    }));
+  }
+
+  function openComparePickerModal(){
+    const rows = indexCache.map(c => {
+      const checked = compareIds.includes(c.id) ? 'checked' : '';
+      return '<label class="picker-row"><input type="checkbox" data-pick="' + c.id + '" ' + checked + '> ' + esc(c.name) + ' <span class="tiny-tag">' + esc(RARITY_MAP[c.rarity].label) + '</span></label>';
+    }).join('') || '<p>No cats yet — create one first!</p>';
+
+    const refresh = () => { renderCompare(); renderList(); };
+
+    openModal({
+      title: 'Choose cats to compare',
+      body: '<div class="picker-list">' + rows + '</div>',
+      confirmLabel: 'Done',
+      cancelLabel: 'Close',
+      onConfirm: refresh,
+      onCancel: refresh
+    });
+
+    document.querySelectorAll('[data-pick]').forEach(cb => cb.addEventListener('change', () => {
+      const id = cb.dataset.pick;
+      if (cb.checked){
+        if (!compareIds.includes(id)) compareIds.push(id);
+        if (compareFormIdx[id] === undefined) compareFormIdx[id] = 0;
+      } else {
+        compareIds = compareIds.filter(x => x !== id);
+      }
+      updateCompareTabBadge();
+    }));
+  }
+
+  /* ============================= Editor ============================= */
+
+  async function openEditor(id){
+    showView('edit');
+    document.getElementById('formPanels').innerHTML = '<div class="loading-msg">Loading…</div>';
+    if (id){
+      editingIsNew = false;
+      const cat = await fetchCatFull(id);
+      if (!cat){ showToast('Could not load that cat.', 'error'); showView('list'); return; }
+      workingCat = JSON.parse(JSON.stringify(cat));
+      workingCat.bannerId = workingCat.bannerId || MY_BANNER_ID;
+    } else {
+      editingIsNew = true;
+      workingCat = blankCat();
+    }
+    activeFormIndex = 0;
+    renderEditor();
+  }
+
+  function renderEditor(){
+    document.getElementById('editTitle').textContent = editingIsNew ? 'New Cat' : ('Edit ' + (workingCat.name || 'Cat'));
+    document.getElementById('deleteCatBtn').hidden = editingIsNew;
+    renderRarityPicker();
+    renderBannerPicker();
+    renderFormCountPicker();
+    renderFormTabsAndPanels();
+  }
+
+  function renderBannerPicker(){
+    const el = document.getElementById('bannerPicker');
+    const current = workingCat.bannerId || MY_BANNER_ID;
+    el.innerHTML = bannersCache.map(b =>
+      '<button type="button" class="banner-opt ' + (current === b.id ? 'active' : '') + '" data-banner="' + b.id + '">' + esc(b.name) + '</button>'
+    ).join('') + '<button type="button" class="banner-opt add-new" id="addBannerFromEditorBtn">+ New</button>';
+    el.querySelectorAll('button[data-banner]').forEach(b => b.addEventListener('click', () => {
+      workingCat.bannerId = b.dataset.banner;
+      renderBannerPicker();
+    }));
+    const addBtn = el.querySelector('#addBannerFromEditorBtn');
+    if (addBtn) addBtn.addEventListener('click', () => openCreateBannerModal(id => {
+      workingCat.bannerId = id;
+      renderBannerPicker();
+      renderBannerFilterSelect();
+    }));
+  }
+
+  function renderRarityPicker(){
+    const el = document.getElementById('rarityPicker');
+    el.innerHTML = RARITIES.map(r =>
+      '<button type="button" class="rarity-opt ' + (workingCat.rarity === r.key ? 'active' : '') + '" data-rarity="' + r.key + '" style="background:' + (r.gradient || r.color) + '">' + esc(r.label) + '</button>'
+    ).join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      workingCat.rarity = b.dataset.rarity;
+      renderRarityPicker();
+    }));
+  }
+
+  function renderFormCountPicker(){
+    const el = document.getElementById('formCountPicker');
+    el.innerHTML = [1, 2, 3, 4].map(n => {
+      const fc = FORM_COLORS[n - 1] || FORM_COLORS[0];
+      const namesUpTo = [];
+      for (let i = 0; i < n; i++) namesUpTo.push(formLabelAt(workingCat, i));
+      const style = 'style="--form-color:' + fc.bg + '; --form-text:' + fc.text + '; --form-border:' + fc.border + '"';
+      return '<button type="button" class="count-opt ' + (workingCat.formCount === n ? 'active' : '') + '" data-count="' + n + '" ' + style + ' title="' + esc(namesUpTo.join(' / ')) + '">' + esc(formLabelAt(workingCat, n - 1)) + '</button>';
+    }).join('');
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setFormCount(Number(b.dataset.count))));
+  }
+
+  function setFormCount(n){
+    if (n === workingCat.formCount) return;
+    if (n < workingCat.formCount){
+      const removed = workingCat.forms.slice(n);
+      const hasData = removed.some(formHasData);
+      const doShrink = () => {
+        workingCat.forms = workingCat.forms.slice(0, n);
+        workingCat.formCount = n;
+        if (activeFormIndex >= n) activeFormIndex = n - 1;
+        renderFormCountPicker();
+        renderFormTabsAndPanels();
+      };
+      if (hasData){
+        openModal({
+          title: 'Remove form data?',
+          body: '<p>Reducing to ' + n + ' form' + (n > 1 ? 's' : '') + ' will delete the data you entered for ' + removed.map((_, idx) => formLabelAt(workingCat, n + idx)).join(', ') + '.</p>',
+          confirmLabel: 'Remove',
+          danger: true,
+          onConfirm: doShrink,
+          onCancel: () => { renderFormCountPicker(); }
+        });
+      } else {
+        doShrink();
+      }
+    } else {
+      while (workingCat.forms.length < n) workingCat.forms.push(blankForm(workingCat.forms.length));
+      workingCat.formCount = n;
+      renderFormCountPicker();
+      renderFormTabsAndPanels();
+    }
+  }
+
+  function renderFormTabsAndPanels(){
+    const tabsEl = document.getElementById('formTabs');
+    tabsEl.innerHTML = workingCat.forms.map((f, i) => {
+      const fc = FORM_COLORS[i] || FORM_COLORS[0];
+      const style = 'style="--form-color:' + fc.bg + '; --form-text:' + fc.text + '; --form-border:' + fc.border + '"';
+      return '<button type="button" class="form-tab ' + (i === activeFormIndex ? 'active' : '') + '" data-idx="' + i + '" ' + style + '>' + esc(formLabelAt(workingCat, i)) + '</button>';
+    }).join('');
+    tabsEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      activeFormIndex = Number(b.dataset.idx);
+      renderFormTabsAndPanels();
+    }));
+
+    const panelsEl = document.getElementById('formPanels');
+    const f = workingCat.forms[activeFormIndex];
+    panelsEl.innerHTML = formPanelHtml(f);
+    bindFormPanelEvents(panelsEl, f);
+  }
+
+  // The preview level for a form defaults to its form slot's default (Normal=1, Evolved=10,
+  // True=30, Ultra=60) but can be overridden per-form via the editable Lvl field.
+  function formPreviewLevel(f){
+    const custom = f && f.previewLevel;
+    if (custom !== null && custom !== undefined && custom !== '') return Math.max(1, Number(custom) || 1);
+    return formBaseLevel(f, activeFormIndex);
+  }
+
+  function currentPreviewLevel(f){
+    return levelPreviewOn ? formPreviewLevel(f) : formBaseLevel(f, activeFormIndex);
+  }
+
+  function dpsFieldHtml(f){
+    const cycle = attackCycleOf(f);
+    const qualifies = isEffectiveQualified(f);
+    const level = currentPreviewLevel(f);
+    let display = '—';
+    if (cycle > 0){
+      let val = apAtLevel(f, activeFormIndex, level) / cycle;
+      let suffix = '';
+      if (effectivePreviewOn && qualifies){ val *= bestDealtMultiplier(f); suffix = '*'; }
+      display = formatDps(val) + suffix;
+    }
+    return '<div class="stat-field stat-computed"><span>DPS<span class="auto-badge">auto</span></span>' +
+      '<div class="computed-value" id="dpsComputedValue">' + display + '</div></div>';
+  }
+
+  // Trait effect entries carry a `traits` array (an effect can now target several traits at
+  // once, e.g. Strong Against Red + Floating), rather than a single `trait`. This joins them
+  // into a readable, comma-separated label.
+  function traitsLabelOf(e){
+    const arr = Array.isArray(e && e.traits) ? e.traits : (e && e.trait ? [e.trait] : []);
+    if (!arr.length) return '—';
+    return arr.map(t => (TRAIT_MAP[t] || {}).label || t).join(', ');
+  }
+
+  function effectiveHintText(f){
+    const effects = (f && f.traitEffects) || [];
+    const offense = effects.filter(e => (TRAIT_ABILITY_MAP[e.ability] || {}).kind === 'offense');
+    const defense = effects.filter(e => (TRAIT_ABILITY_MAP[e.ability] || {}).kind === 'defense');
+    const parts = [];
+    if (offense.length){
+      const descs = offense.map(e => {
+        const type = TRAIT_ABILITY_MAP[e.ability] || {};
+        const traitLabel = esc(traitsLabelOf(e));
+        const mult = dealtMultiplierOf(e);
+        const takenNote = e.ability === 'strong_against' ? (', ' + EFFECTIVE_TAKEN_MULT + 'x taken') : '';
+        return esc(type.label || e.ability) + ' vs ' + traitLabel + ' (' + mult.toFixed(2) + 'x dealt' + takenNote + ')';
+      });
+      parts.push('Damage dealt: ' + descs.join('; ') + '. The DPS preview above uses the strongest one.');
+    }
+    if (defense.length){
+      const descs = defense.map(e => {
+        const type = TRAIT_ABILITY_MAP[e.ability] || {};
+        const traitLabel = esc(traitsLabelOf(e));
+        const taken = Number(e.value);
+        return esc(type.label || e.ability) + ' vs ' + traitLabel + ' (takes ' + (taken || taken === 0 ? taken : '?') + 'x damage)';
+      });
+      parts.push('Damage taken: ' + descs.join('; ') + '.');
+    }
+    if (!parts.length) return 'Add a Strong Against, Massive Damage, or Insane Damage trait effect below to preview the DPS bonus.';
+    return '* ' + parts.join(' ');
+  }
+
+  function levelPreviewHintText(f){
+    const level = formPreviewLevel(f);
+    const base = formBaseLevel(f, activeFormIndex);
+    const formName = FORM_LABELS[activeFormIndex] || ('Form ' + (activeFormIndex + 1));
+    const isCustom = f && f.previewLevel !== null && f.previewLevel !== undefined && f.previewLevel !== '';
+    const isCustomBase = f && f.baseLevel !== null && f.baseLevel !== undefined && f.baseLevel !== '';
+    return '* Showing HP, Damage and DPS at Level ' + level + (isCustom ? ' — set for this ' + esc(formName) + ' form' : ' — the default preview level for ' + esc(formName) + ' forms') +
+      '. The stats you entered above are treated as this form\'s Level ' + base + ' stats' + (isCustomBase ? ' (custom base level)' : ' (default base level for ' + esc(formName) + ' forms)') +
+      ', using this form\'s own level-up growth below (each form can grow at a different rate). Change the Lvl field above to preview a different level, or set a different base level in the growth box below.';
+  }
+
+  // Controls for telling Whisker Works which level the stats typed into this form actually
+  // are. Normal forms usually exist from Level 1, but Evolved/True/Ultra forms only unlock
+  // partway through — so stats copied from the wiki (or from in-game) for those forms are
+  // already Level 10/30/60 stats, not Level 1. Getting this wrong is what made growth blow up
+  // the numbers, so it's editable per form here.
+  function baseLevelRowHtml(f, idx){
+    const current = formBaseLevel(f, idx);
+    const isCustom = f && f.baseLevel !== null && f.baseLevel !== undefined && f.baseLevel !== '';
+    const defaultLvl = FORM_LEVELS[idx] || 1;
+    const formName = FORM_LABELS[idx] || ('Form ' + (idx + 1));
+    const note = isCustom
+      ? ('Custom base level. The default for ' + esc(formName) + ' forms is Level ' + defaultLvl + '.')
+      : ('Default base level for ' + esc(formName) + ' forms.');
+    return '<div class="base-level-row">' +
+      '<label class="stat-field base-level-field"><span>Stats above are this form\'s Level</span>' +
+        '<input type="number" min="1" max="9999" id="baseLevelInput" value="' + current + '"></label>' +
+      '<button type="button" class="btn small" id="setBaseLevelBtn" title="Use the number to the left as this form\'s base level">Set as base level</button>' +
+      (isCustom ? '<button type="button" class="btn small ghost" id="resetBaseLevelBtn" title="Go back to Level ' + defaultLvl + '">Reset to default</button>' : '') +
+      '<span class="base-level-note">' + note + '</span>' +
+    '</div>';
+  }
+
+  function effectivePreviewText(key, f, value){
+    if (key === 'ap'){
+      if (!isEffectiveQualified(f)) return '';
+      const mult = bestDealtMultiplier(f);
+      return 'Effective dmg: ' + formatNum(Math.round(value * mult)) + '*';
+    }
+    if (key === 'hp'){
+      const mult = bestTakenMultiplier(f);
+      if (mult === null) return '';
+      return 'Effective HP: ' + formatNum(Math.round(value / mult)) + '*';
+    }
+    return '';
+  }
+
+  // Attack Range gets its own renderer: the standard range box, then Target Type (Single
+  // Target / Area Attack) and Range Modifier (None / Omni Strike / Long Distance) as two
+  // independent selectors, then whichever extra boxes the chosen Range Modifier calls for
+  // (Omni Strike's negative-only behind-range box, or Long Distance's Blindspot + Standing
+  // Range boxes). Nothing extra is shown when the Range Modifier is None.
+  function rangeFieldHtml(f){
+    const rangeInput = '<label class="stat-field"><span>Attack Range</span>' +
+      '<input type="number" step="any" data-stat="range" value="' + (f.stats.range === undefined ? '' : f.stats.range) + '" placeholder="0"></label>';
+
+    const targetOptions = TARGET_TYPES.map(t =>
+      '<option value="' + t.key + '"' + (f.targetType === t.key ? ' selected' : '') + '>' + esc(t.label) + '</option>'
+    ).join('');
+    const targetSelect = '<label class="stat-field"><span>Target Type</span>' +
+      '<select id="targetTypeSelect">' + targetOptions + '</select></label>';
+
+    const modifierOptions = RANGE_MODIFIERS.map(t =>
+      '<option value="' + t.key + '"' + (f.rangeModifier === t.key ? ' selected' : '') + '>' + esc(t.label) + '</option>'
+    ).join('');
+    const modifierSelect = '<label class="stat-field"><span>Range Modifier</span>' +
+      '<select id="rangeModifierSelect">' + modifierOptions + '</select></label>';
+
+    let extra = '';
+    if (f.rangeModifier === 'omni'){
+      extra = '<label class="stat-field"><span>Omni Strike Range (behind)</span>' +
+        '<input type="number" step="1" max="-1" data-stat="rangeOmni" value="' + (f.stats.rangeOmni === undefined ? '' : f.stats.rangeOmni) + '" placeholder="-100" title="Omni Strike hits behind the cat too — enter a negative value."></label>';
+    } else if (f.rangeModifier === 'longdistance'){
+      extra = '<label class="stat-field"><span>Blindspot</span>' +
+        '<input type="number" step="1" data-stat="rangeBlindspot" value="' + (f.stats.rangeBlindspot === undefined ? '' : f.stats.rangeBlindspot) + '" placeholder="0"></label>' +
+        '<label class="stat-field"><span>Standing Range</span>' +
+        '<input type="number" step="1" data-stat="rangeStandingRange" value="' + (f.stats.rangeStandingRange === undefined ? '' : f.stats.rangeStandingRange) + '" placeholder="0"></label>';
+    }
+
+    return rangeInput + targetSelect + modifierSelect + extra;
+  }
+
+  function statFieldHtml(sf, f){
+    if (sf.computed) return dpsFieldHtml(f);
+    if (sf.key === 'range') return rangeFieldHtml(f);
+    const isLevelable = (sf.key === 'hp' || sf.key === 'ap');
+    let preview = '';
+    let valueForEffective = Number(f.stats[sf.key]) || 0;
+    if (levelPreviewOn && isLevelable){
+      const level = formPreviewLevel(f);
+      const baseLevel = formBaseLevel(f, activeFormIndex);
+      const growth = Number(sf.key === 'hp' ? f.hpGrowth : f.dmgGrowth) || 0;
+      const base = Number(f.stats[sf.key]) || 0;
+      const atLevel = base + growth * (level - baseLevel);
+      valueForEffective = atLevel;
+      preview = '<small class="level-preview-value" data-level-preview="' + sf.key + '">@ Lvl ' + level + ': ' + formatNum(Math.round(atLevel)) + '</small>';
+    }
+    let effectiveHtml = '';
+    if (isLevelable){
+      const text = effectivePreviewText(sf.key, f, valueForEffective);
+      effectiveHtml = '<small class="effective-preview-value" data-effective-preview="' + sf.key + '"' + (effectivePreviewOn && text ? '' : ' hidden') + '>' + text + '</small>';
+    }
+    return '<label class="stat-field"><span>' + esc(sf.label) + '</span>' +
+      '<input type="number" step="any" data-stat="' + sf.key + '" value="' + (f.stats[sf.key] === undefined ? '' : f.stats[sf.key]) + '" placeholder="0">' +
+      preview + effectiveHtml +
+    '</label>';
+  }
+
+  // ---- Generic "ability entry" picker: add/chip/remove UI shared by Neutral Abilities and
+  // the Conjured Cat's own abilities. Entries are objects like { key, ...fieldValues } so
+  // abilities with extra fields (Strengthen, Survive, Critical, etc.) can carry their values,
+  // while fieldless abilities are just { key }. ----
+
+  function abilityEntrySelectOptionsHtml(chosenKeys, excludeKeys){
+    const excluded = new Set([].concat(excludeKeys || [], chosenKeys || []));
+    const available = NEUTRAL_ABILITIES.filter(a => !excluded.has(a.key));
+    if (!available.length) return '<option value="">All abilities added</option>';
+    return '<option value="">Select an ability…</option>' + available.map(a =>
+      '<option value="' + a.key + '">' + esc(a.label) + '</option>'
+    ).join('');
+  }
+
+  // Extra value-fields markup for a chosen ability: the generic numeric fields (Chance,
+  // Strengthens by, etc.) plus, for Survive specifically, the Limited/Infinite toggle and its
+  // follow-up boxes.
+  function abilityEntryValueFieldsHtml(key){
+    const type = NEUTRAL_ABILITY_MAP[key];
+    if (!type) return '';
+    let html = traitValueFieldsHtml(type);
+    if (key === 'survive'){
+      html +=
+        '<label class="stat-field" data-field-key="surviveMode"><span>Survives</span>' +
+          '<select id="surviveModeSelect"><option value="count">Limited number of times</option><option value="infinite">Infinite</option></select>' +
+        '</label>' +
+        '<label class="stat-field" id="surviveCountField"><span>Number of times</span><input type="number" min="1" step="1" id="surviveCountInput" placeholder="1"></label>' +
+        '<label class="stat-field" id="surviveDecayField" hidden><span>Chance decrease / survive (%)</span><input type="number" min="0" step="1" id="surviveDecayInput" placeholder="0"></label>' +
+        '<label class="stat-field" id="surviveMinField" hidden><span>Minimum chance (%)</span><input type="number" min="0" max="100" step="1" id="surviveMinInput" placeholder="0"></label>';
+    }
+    return html;
+  }
+
+  function bindSurviveModeToggle(container){
+    const modeSel = container.querySelector('#surviveModeSelect');
+    if (!modeSel) return;
+    const countField = container.querySelector('#surviveCountField');
+    const decayField = container.querySelector('#surviveDecayField');
+    const minField = container.querySelector('#surviveMinField');
+    function sync(){
+      const infinite = modeSel.value === 'infinite';
+      if (countField) countField.hidden = infinite;
+      if (decayField) decayField.hidden = !infinite;
+      if (minField) minField.hidden = !infinite;
+    }
+    modeSel.addEventListener('change', sync);
+    sync();
+  }
+
+  function abilityEntryLabel(e){
+    const type = NEUTRAL_ABILITY_MAP[e.key] || {};
+    const fields = type.fields || [];
+    const parts = fields
+      .filter(fld => e[fld.key] !== undefined && e[fld.key] !== null && e[fld.key] !== '')
+      .map(fld => e[fld.key] + (fld.suffix || ''));
+    if (e.key === 'survive'){
+      if (e.infinite){
+        parts.push('∞ survives');
+        if (e.decay !== undefined && e.decay !== null && e.decay !== '') parts.push('-' + e.decay + '%/ea');
+        if (e.minChance !== undefined && e.minChance !== null && e.minChance !== '') parts.push('min ' + e.minChance + '%');
+      } else if (e.count !== undefined && e.count !== null && e.count !== ''){
+        parts.push(e.count + 'x');
+      }
+    }
+    return parts.length ? (type.label || e.key) + ' (' + parts.join(', ') + ')' : (type.label || e.key);
+  }
+
+  function abilityEntryListInnerHtml(list, removeAttr){
+    if (!list.length) return '<p class="ability-empty">No abilities added yet.</p>';
+    return '<div class="ability-chip-list">' + list.map((e, idx) =>
+      '<span class="ability-chip">' + esc(abilityEntryLabel(e)) +
+        '<button type="button" data-' + removeAttr + '="' + idx + '" title="Remove ability">×</button></span>'
+    ).join('') + '</div>';
+  }
+
+  // Factory shared by the main Neutral Abilities box and the Conjured Cat's ability box.
+  // `getList(f)` returns the array to read/mutate; `excludeKeys` hides options that shouldn't
+  // be pickable there (e.g. Conjure can't conjure another Conjure). `onChange`, if given, runs
+  // after every add/remove (used to refresh the Conjure section when Conjure itself is toggled).
+  function makeAbilityEntryController(getList, ids, excludeKeys, onChange){
+    function render(f, root){
+      root = root || document;
+      const selectEl = root.querySelector('#' + ids.select);
+      if (selectEl) selectEl.innerHTML = abilityEntrySelectOptionsHtml(getList(f).map(e => e.key), excludeKeys);
+      const valueFieldsEl = root.querySelector('#' + ids.valueFields);
+      if (valueFieldsEl) valueFieldsEl.innerHTML = '';
+      const listEl = root.querySelector('#' + ids.list);
+      if (listEl) listEl.innerHTML = abilityEntryListInnerHtml(getList(f), ids.removeAttr);
+      bind(f, root);
+    }
+    function bind(f, root){
+      const selectEl = root.querySelector('#' + ids.select);
+      const valueFieldsEl = root.querySelector('#' + ids.valueFields);
+      const addBtn = root.querySelector('#' + ids.addBtn);
+      const listEl = root.querySelector('#' + ids.list);
+
+      function syncValueFields(){
+        if (!valueFieldsEl || !selectEl) return;
+        valueFieldsEl.innerHTML = abilityEntryValueFieldsHtml(selectEl.value);
+        bindSurviveModeToggle(valueFieldsEl);
+      }
+      if (selectEl) selectEl.addEventListener('change', syncValueFields);
+
+      if (addBtn && selectEl) addBtn.addEventListener('click', () => {
+        const key = selectEl.value;
+        if (!key) return;
+        const type = NEUTRAL_ABILITY_MAP[key] || {};
+        const entry = { key };
+        (type.fields || []).forEach(fld => {
+          const inp = valueFieldsEl ? valueFieldsEl.querySelector('[data-field-input="' + fld.key + '"]') : null;
+          const raw = inp ? inp.value : '';
+          const num = Number(raw);
+          entry[fld.key] = (raw !== '' && !isNaN(num)) ? num : fld.default;
+        });
+        if (key === 'survive' && valueFieldsEl){
+          const modeSel = valueFieldsEl.querySelector('#surviveModeSelect');
+          const infinite = modeSel ? modeSel.value === 'infinite' : false;
+          entry.infinite = infinite;
+          if (infinite){
+            const decayInp = valueFieldsEl.querySelector('#surviveDecayInput');
+            const minInp = valueFieldsEl.querySelector('#surviveMinInput');
+            entry.decay = (decayInp && decayInp.value !== '') ? Number(decayInp.value) : 0;
+            entry.minChance = (minInp && minInp.value !== '') ? Number(minInp.value) : 0;
+          } else {
+            const countInp = valueFieldsEl.querySelector('#surviveCountInput');
+            entry.count = (countInp && countInp.value !== '') ? Number(countInp.value) : 1;
+          }
+        }
+        getList(f).push(entry);
+        render(f, root);
+        if (onChange) onChange(f);
+      });
+
+      if (listEl) listEl.querySelectorAll('[data-' + ids.removeAttr + ']').forEach(btn => {
+        btn.addEventListener('click', () => {
+          getList(f).splice(Number(btn.dataset[ids.removeDatasetKey]), 1);
+          render(f, root);
+          if (onChange) onChange(f);
+        });
+      });
+
+      syncValueFields();
+    }
+    return { render };
+  }
+
+  const neutralAbilityController = makeAbilityEntryController(
+    f => f.abilities,
+    { select:'neutralAbilitySelect', valueFields:'neutralAbilityValueFields', addBtn:'addAbilityBtn', list:'abilityList', removeAttr:'ability-remove', removeDatasetKey:'abilityRemove' },
+    [],
+    f => refreshConjureSection(f)
+  );
+
+  function renderAbilityBox(f, root){
+    neutralAbilityController.render(f, root || document);
+  }
+
+  // ---- Immunity: separate, fieldless box (Immune to Freeze, Slow, Weaken, etc). ----
+
+  function immunitySelectOptionsHtml(chosen){
+    const available = IMMUNITY_ABILITIES.filter(a => !chosen.includes(a.key));
+    if (!available.length) return '<option value="">All immunities added</option>';
+    return '<option value="">Select an immunity…</option>' + available.map(a =>
+      '<option value="' + a.key + '">' + esc(a.label) + '</option>'
+    ).join('');
+  }
+
+  function immunityListInnerHtml(f){
+    const list = f.immunities || [];
+    if (!list.length) return '<p class="ability-empty">No immunities added yet.</p>';
+    return '<div class="ability-chip-list">' + list.map((key, idx) =>
+      '<span class="ability-chip">' + esc(immunityLabel(key)) +
+        '<button type="button" data-immunity-remove="' + idx + '" title="Remove immunity">×</button></span>'
+    ).join('') + '</div>';
+  }
+
+  function renderImmunityBox(f, root){
+    root = root || document;
+    const selectEl = root.querySelector('#immunitySelect');
+    if (selectEl) selectEl.innerHTML = immunitySelectOptionsHtml(f.immunities || []);
+    const listEl = root.querySelector('#immunityList');
+    if (listEl){
+      listEl.innerHTML = immunityListInnerHtml(f);
+      bindImmunityListEvents(listEl, f);
+    }
+  }
+
+  function bindImmunityListEvents(listEl, f){
+    listEl.querySelectorAll('[data-immunity-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        f.immunities.splice(Number(btn.dataset.immunityRemove), 1);
+        renderImmunityBox(f);
+      });
+    });
+  }
+
+  // ---- Conjure: when a form has the Conjure ability, it can summon a "little cat" of its
+  // own — a separate mini-unit with its own damage and its own set of neutral abilities. ----
+
+  function hasConjure(f){
+    return (f.abilities || []).some(e => e.key === 'conjure');
+  }
+
+  const conjureAbilityController = makeAbilityEntryController(
+    f => f.conjure.abilities,
+    { select:'conjureAbilitySelect', valueFields:'conjureAbilityValueFields', addBtn:'addConjureAbilityBtn', list:'conjureAbilityList', removeAttr:'conjure-ability-remove', removeDatasetKey:'conjureAbilityRemove' },
+    ['conjure']
+  );
+
+  function conjureSectionHtml(f){
+    if (!hasConjure(f)) return '';
+    const c = f.conjure || { name:'', damage:'', abilities:[] };
+    return '<div class="trait-box ability-box">' +
+        '<p class="trait-box-title">🐱 Conjured Cat</p>' +
+        '<p class="trait-box-hint">Conjure summons a little cat of its own — give it a name, damage, and abilities.</p>' +
+        '<div class="trait-box-row">' +
+          '<label class="text-field"><span>Name</span><input type="text" class="input" id="conjureNameInput" value="' + esc(c.name || '') + '" placeholder="e.g. Lil\' Nyandam"></label>' +
+          '<label class="stat-field"><span>Damage</span><input type="number" step="any" id="conjureDamageInput" value="' + (c.damage === undefined || c.damage === null ? '' : c.damage) + '" placeholder="0"></label>' +
+        '</div>' +
+        '<div class="trait-box-row">' +
+          '<label class="stat-field"><span>Add Ability</span><select id="conjureAbilitySelect">' + abilityEntrySelectOptionsHtml(c.abilities.map(e => e.key), ['conjure']) + '</select></label>' +
+          '<div class="trait-value-fields" id="conjureAbilityValueFields"></div>' +
+          '<button type="button" class="btn small" id="addConjureAbilityBtn">+ Add Ability</button>' +
+        '</div>' +
+        '<div class="ability-list" id="conjureAbilityList">' + abilityEntryListInnerHtml(c.abilities, 'conjure-ability-remove') + '</div>' +
+      '</div>';
+  }
+
+  function bindConjureSectionEvents(wrapEl, f){
+    if (!wrapEl) return;
+    const nameInp = wrapEl.querySelector('#conjureNameInput');
+    if (nameInp) nameInp.addEventListener('input', () => { f.conjure.name = nameInp.value; });
+
+    const dmgInp = wrapEl.querySelector('#conjureDamageInput');
+    if (dmgInp) dmgInp.addEventListener('input', () => { f.conjure.damage = dmgInp.value; });
+
+    conjureAbilityController.render(f, wrapEl);
+  }
+
+  // Re-renders the Conjure section in place (it only exists while the Conjure ability is
+  // active on the form) without re-rendering the whole form panel.
+  function refreshConjureSection(f){
+    const wrap = document.getElementById('conjureWrap');
+    if (!wrap) return;
+    wrap.innerHTML = conjureSectionHtml(f);
+    bindConjureSectionEvents(wrap, f);
+  }
+
+  // ---- Trait effects (Strong Against, Resistant, Weaken, etc.) — ability + trait, same
+  // add/chip/remove pattern as Neutral Abilities ----
+
+  function traitAbilityOptionsHtml(){
+    return '<option value="">Select an ability…</option>' + TRAIT_ABILITIES.map(a =>
+      '<option value="' + a.key + '" title="' + esc(a.desc) + '">' + esc(a.label) + '</option>'
+    ).join('');
+  }
+
+  // Renders one small numeric input per `fields` entry on the selected ability (e.g. Weaken
+  // gets Chance / Weakens power by / Duration; Massive Damage just gets a single value box).
+  // Abilities with no fields (Strong Against, Attacks Only) render nothing here.
+  function traitValueFieldsHtml(type){
+    const fields = (type && type.fields) || [];
+    return fields.map(fld =>
+      '<label class="stat-field" data-field-key="' + fld.key + '"><span>' + esc(fld.label) + '</span>' +
+        '<input type="number" step="' + (fld.step || 'any') + '"' +
+        (fld.min !== undefined ? ' min="' + fld.min + '"' : '') +
+        (fld.max !== undefined ? ' max="' + fld.max + '"' : '') +
+        ' data-field-input="' + fld.key + '" placeholder="' + fld.default + '"></label>'
+    ).join('');
+  }
+
+  function traitSelectOptionsHtml(){
+    return TRAITS.map(t =>
+      '<option value="' + t.key + '">' + esc(t.label) + '</option>'
+    ).join('');
+  }
+
+  function traitEffectLabel(e){
+    const type = TRAIT_ABILITY_MAP[e.ability] || {};
+    const abilityLabel = type.label || e.ability;
+    const traitLabel = traitsLabelOf(e);
+    let label = e.ability === 'strong_against' ? (abilityLabel + ' ' + traitLabel) : (abilityLabel + ' vs ' + traitLabel);
+    const fields = type.fields || [];
+    if (fields.length){
+      const parts = fields
+        .filter(fld => e[fld.key] !== undefined && e[fld.key] !== null && e[fld.key] !== '')
+        .map(fld => e[fld.key] + (fld.suffix || ''));
+      if (parts.length) label += ' (' + parts.join(', ') + ')';
+    }
+    return label;
+  }
+
+  function traitListInnerHtml(f){
+    const list = f.traitEffects || [];
+    if (!list.length) return '<p class="ability-empty">No trait effects added yet.</p>';
+    return '<div class="ability-chip-list">' + list.map((e, idx) =>
+      '<span class="ability-chip" title="' + esc((TRAIT_ABILITY_MAP[e.ability] || {}).desc || '') + '">' + esc(traitEffectLabel(e)) +
+        '<button type="button" data-trait-remove="' + idx + '" title="Remove trait effect">×</button></span>'
+    ).join('') + '</div>';
+  }
+
+  function renderTraitBox(f){
+    const listEl = document.getElementById('traitList');
+    if (listEl){
+      listEl.innerHTML = traitListInnerHtml(f);
+      bindTraitListEvents(listEl, f);
+    }
+    updateEffectiveHint(f);
+    updateDpsDisplay(f);
+    updateEffectivePreviews(f);
+  }
+
+  function bindTraitListEvents(listEl, f){
+    listEl.querySelectorAll('[data-trait-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        f.traitEffects.splice(Number(btn.dataset.traitRemove), 1);
+        renderTraitBox(f);
+      });
+    });
+  }
+
+  // ---- Evolve Requirements: materials (+ variant + amount) needed to evolve INTO a form.
+  // Not shown for the Normal form (index 0) since nothing evolves into it. ----
+
+  function materialSelectOptionsHtml(){
+    const groups = {};
+    MATERIALS.forEach(m => { (groups[m.group] = groups[m.group] || []).push(m); });
+    let html = '<option value="">Select a material…</option>';
+    Object.keys(groups).forEach(g => {
+      html += '<optgroup label="' + esc(g) + '">' + groups[g].map(m =>
+        '<option value="' + m.key + '">' + esc(m.color) + '</option>'
+      ).join('') + '</optgroup>';
+    });
+    return html;
+  }
+
+  function materialVariantOptionsHtml(materialKey){
+    const m = MATERIAL_MAP[materialKey];
+    if (!m) return '<option value="">—</option>';
+    return m.variants.map(v => '<option value="' + v.key + '">' + esc(v.label) + '</option>').join('');
+  }
+
+  function materialEntryLabel(e){
+    const m = MATERIAL_MAP[e.key];
+    if (!m) return e.key;
+    const variantObj = m.variants.find(v => v.key === e.variant) || m.variants[0];
+    const amt = (e.amount === undefined || e.amount === null || e.amount === '') ? 0 : Number(e.amount);
+    return m.color + ' ' + variantObj.label + ' ×' + amt;
+  }
+
+  function materialListInnerHtml(list){
+    if (!list || !list.length) return '<p class="ability-empty">No materials added yet.</p>';
+    return '<div class="ability-chip-list">' + list.map((e, idx) =>
+      '<span class="ability-chip">' + esc(materialEntryLabel(e)) +
+        '<button type="button" data-material-remove="' + idx + '" title="Remove material">×</button></span>'
+    ).join('') + '</div>';
+  }
+
+  // The level required to evolve into this form: a custom override (f.evolveReq.level) if the
+  // user set one, otherwise the form slot's default (Evolved → 10, True → 30). Ultra has no
+  // default — it stays null unless the user sets one — since Ultra always needs materials
+  // regardless of level.
+  function evolveReqLevel(f, idx){
+    const custom = f && f.evolveReq && f.evolveReq.level;
+    if (custom !== null && custom !== undefined && custom !== '') return Math.max(1, Number(custom) || 1);
+    return EVOLVE_DEFAULT_LEVEL[idx] || null;
+  }
+
+  function evolveReqSectionHtml(f, idx){
+    if (idx === 0) return ''; // Normal form has nothing to evolve from
+    const req = f.evolveReq || { materials: [], xp: '', level: '' };
+    const materials = req.materials || [];
+    const fromLabel = formLabelAt(workingCat, idx - 1);
+    const toLabel = formLabelAt(workingCat, idx);
+    const defaultLevel = EVOLVE_DEFAULT_LEVEL[idx] || null;
+    const level = evolveReqLevel(f, idx);
+    const isCustomLevel = req.level !== null && req.level !== undefined && req.level !== '';
+    const levelPhrase = level ? ('reaching Level ' + level) : null;
+
+    let hint;
+    if (idx === 3){
+      hint = materials.length
+        ? ('These materials' + (levelPhrase ? ' (and ' + levelPhrase + ')' : '') + ' are required to evolve ' + esc(fromLabel) + ' into ' + esc(toLabel) + '.')
+        : ('⚠ Ultra Forms always need at least one evolve material — this form can\u2019t be saved until one is added.' + (levelPhrase ? (' Also requires ' + levelPhrase + '.') : ''));
+    } else if (materials.length){
+      hint = 'These materials' + (levelPhrase ? ' (and ' + levelPhrase + ')' : '') + ' are required to evolve ' + esc(fromLabel) + ' into ' + esc(toLabel) + '.';
+    } else if (levelPhrase){
+      hint = 'No materials added — defaults to simply "Reach Level ' + level + '" with no items needed.';
+    } else {
+      hint = 'No materials or level requirement set for this form.';
+    }
+
+    const xpField = materials.length
+      ? '<label class="stat-field"><span>XP to Evolve</span><input type="number" min="0" step="1" id="evolveXpInput" value="' + (req.xp === undefined || req.xp === null ? '' : req.xp) + '" placeholder="0"></label>'
+      : '';
+
+    const levelField = '<label class="stat-field"><span>Level Required' + (isCustomLevel ? '' : (defaultLevel ? ' (default)' : '')) + '</span>' +
+      '<input type="number" min="1" max="9999" id="evolveLevelInput" value="' + (isCustomLevel ? level : '') + '" placeholder="' + (defaultLevel || 'None') + '" title="Leave blank to use the default for this form (Evolved: 10, True: 30). Ultra has no default."></label>';
+
+    return '<div class="text-field">' +
+        '<div class="trait-box ability-box">' +
+          '<p class="trait-box-title">🧬 Evolve Requirements (' + esc(fromLabel) + ' → ' + esc(toLabel) + ')</p>' +
+          '<div class="trait-box-row">' +
+            levelField +
+            '<label class="stat-field"><span>Material</span><select id="evolveMaterialSelect">' + materialSelectOptionsHtml() + '</select></label>' +
+            '<label class="stat-field"><span>Variant</span><select id="evolveVariantSelect"><option value="">—</option></select></label>' +
+            '<label class="stat-field"><span>Amount</span><input type="number" min="1" step="1" id="evolveAmountInput" placeholder="1"></label>' +
+            '<button type="button" class="btn small" id="addEvolveMaterialBtn">+ Add Material</button>' +
+            xpField +
+          '</div>' +
+          '<div class="ability-list" id="evolveMaterialList">' + materialListInnerHtml(materials) + '</div>' +
+          '<p class="trait-box-hint">' + hint + '</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function bindEvolveReqSectionEvents(panelsEl, f, idx){
+    if (idx === 0) return;
+    const materialSelect = panelsEl.querySelector('#evolveMaterialSelect');
+    const variantSelect = panelsEl.querySelector('#evolveVariantSelect');
+    const amountInput = panelsEl.querySelector('#evolveAmountInput');
+    const addBtn = panelsEl.querySelector('#addEvolveMaterialBtn');
+    const listEl = panelsEl.querySelector('#evolveMaterialList');
+    const xpInput = panelsEl.querySelector('#evolveXpInput');
+    const levelInput = panelsEl.querySelector('#evolveLevelInput');
+
+    if (materialSelect && variantSelect) materialSelect.addEventListener('change', () => {
+      variantSelect.innerHTML = materialVariantOptionsHtml(materialSelect.value);
+    });
+
+    if (addBtn && materialSelect && variantSelect) addBtn.addEventListener('click', () => {
+      const key = materialSelect.value;
+      if (!key) return;
+      const variant = variantSelect.value || (MATERIAL_MAP[key].variants[0] || {}).key;
+      const amount = amountInput && amountInput.value !== '' ? Number(amountInput.value) : 1;
+      f.evolveReq.materials.push({ key, variant, amount: (amount && amount > 0) ? amount : 1 });
+      renderFormTabsAndPanels();
+    });
+
+    if (listEl) listEl.querySelectorAll('[data-material-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        f.evolveReq.materials.splice(Number(btn.dataset.materialRemove), 1);
+        renderFormTabsAndPanels();
+      });
+    });
+
+    if (xpInput) xpInput.addEventListener('input', () => { f.evolveReq.xp = xpInput.value; });
+    if (levelInput) levelInput.addEventListener('input', () => { f.evolveReq.level = levelInput.value; });
+  }
+
+  function formPanelHtml(f){
+    const statsHtml = STAT_FIELDS.map(sf => statFieldHtml(sf, f)).join('');
+
+    const namePlaceholder = activeFormIndex === 0 ? 'e.g. Grumble Whiskers' : (FORM_LABELS[activeFormIndex] || 'Form name');
+    const previewLevel = formPreviewLevel(f);
+    return '<div class="form-name-row">' +
+        '<label class="text-field form-name-field"><span>Form Name' + (activeFormIndex === 0 ? ' (also used as the cat\'s name)' : '') + '</span><input type="text" data-form-name value="' + esc(f.label || '') + '" placeholder="' + esc(namePlaceholder) + '"></label>' +
+        '<button type="button" class="btn small toggle' + (levelPreviewOn ? ' active' : '') + '" id="levelPreviewBtn" title="Preview HP, Damage and DPS at a chosen level">Levels</button>' +
+        (levelPreviewOn ? '<label class="level-input-inline">Lvl <input type="number" min="1" max="9999" id="levelPreviewInput" value="' + previewLevel + '"></label>' : '') +
+      '</div>' +
+      (levelPreviewOn ? '<p class="level-preview-hint" id="levelPreviewHint">' + levelPreviewHintText(f) + '</p>' : '') +
+      '<div class="panel-grid">' +
+      '<div class="image-col">' +
+        '<div class="image-drop" id="imageDrop">' + (f.image ? '<img src="' + f.image + '" alt="">' : '<div class="img-placeholder">' + pawSVG() + '</div>') + '</div>' +
+        '<input type="file" id="imageInput" accept="image/*" hidden>' +
+        '<div class="image-btns">' +
+          '<button type="button" class="btn small" id="uploadImgBtn">Upload Image</button>' +
+          (f.image ? '<button type="button" class="btn small ghost" id="removeImgBtn">Remove</button>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="stats-col">' +
+        '<div class="stats-grid">' + statsHtml + '</div>' +
+        '<div class="growth-box">' +
+          '<p class="growth-box-title">⚡ Level-up growth for this form (flat amount added per level)</p>' +
+          '<div class="growth-grid">' +
+            '<label class="stat-field"><span>HP increase / level (flat)</span><input type="number" step="any" data-growth="hpGrowth" value="' + (f.hpGrowth === undefined ? '' : f.hpGrowth) + '" placeholder="0"></label>' +
+            '<label class="stat-field"><span>Damage increase / level (flat)</span><input type="number" step="any" data-growth="dmgGrowth" value="' + (f.dmgGrowth === undefined ? '' : f.dmgGrowth) + '" placeholder="0"></label>' +
+          '</div>' +
+          baseLevelRowHtml(f, activeFormIndex) +
+        '</div>' +
+        '<div class="trait-box ability-box">' +
+          '<p class="trait-box-title">🎯 Trait Effects</p>' +
+          '<div class="trait-box-row">' +
+            '<label class="stat-field"><span>Ability</span><select id="traitAbilitySelect">' + traitAbilityOptionsHtml() + '</select></label>' +
+            '<label class="stat-field"><span>Target Trait(s)<br><small style="font-weight:600;">(ctrl/cmd-click for multiple)</small></span><select id="strongTraitSelect" multiple size="5">' + traitSelectOptionsHtml() + '</select></label>' +
+            '<div class="trait-value-fields" id="traitValueFields"></div>' +
+            '<button type="button" class="btn small" id="addTraitBtn">+ Add</button>' +
+            '<button type="button" class="btn small toggle' + (effectivePreviewOn ? ' active' : '') + '" id="effectivePreviewBtn" title="Preview DPS boosted by the trait damage bonus">Effective<span class="asterisk">*</span></button>' +
+          '</div>' +
+          '<div class="ability-list" id="traitList">' + traitListInnerHtml(f) + '</div>' +
+          '<p class="trait-box-hint" id="effectivePreviewHint"' + (effectivePreviewOn ? '' : ' hidden') + '>' + effectiveHintText(f) + '</p>' +
+          '<p class="trait-box-hint wiki-source-links">Sourced from the Battle Cats Wiki: <a href="https://battlecats.miraheze.org/wiki/Special_Abilities" target="_blank" rel="noopener">miraheze</a><a href="https://battle-cats.fandom.com/wiki/Special_Abilities" target="_blank" rel="noopener">fandom</a></p>' +
+        '</div>' +
+      '</div>' +
+      '</div>' +
+      '<div class="text-sections">' +
+        evolveReqSectionHtml(f, activeFormIndex) +
+        '<label class="text-field"><span>Description</span><textarea data-text="description" placeholder="None" rows="3">' + esc(f.description) + '</textarea></label>' +
+        '<div class="text-field">' +
+          '<div class="trait-box ability-box">' +
+            '<p class="trait-box-title">⭐ Neutral Abilities</p>' +
+            '<div class="trait-box-row">' +
+              '<label class="stat-field"><span>Add Ability</span><select id="neutralAbilitySelect">' + abilityEntrySelectOptionsHtml(f.abilities.map(e => e.key), []) + '</select></label>' +
+              '<div class="trait-value-fields" id="neutralAbilityValueFields"></div>' +
+              '<button type="button" class="btn small" id="addAbilityBtn">+ Add Ability</button>' +
+            '</div>' +
+            '<div class="ability-list" id="abilityList">' + abilityEntryListInnerHtml(f.abilities, 'ability-remove') + '</div>' +
+            '<p class="trait-box-hint">Abilities that work the same way no matter the enemy\'s trait.</p>' +
+            '<p class="trait-box-hint wiki-source-links">Sourced from the Battle Cats Wiki: <a href="https://battlecats.miraheze.org/wiki/Special_Abilities" target="_blank" rel="noopener">miraheze</a><a href="https://battle-cats.fandom.com/wiki/Special_Abilities" target="_blank" rel="noopener">fandom</a></p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="text-field">' +
+          '<div class="trait-box ability-box">' +
+            '<p class="trait-box-title">🛡️ Immunities</p>' +
+            '<div class="trait-box-row">' +
+              '<label class="stat-field"><span>Add Immunity</span><select id="immunitySelect">' + immunitySelectOptionsHtml(f.immunities || []) + '</select></label>' +
+              '<button type="button" class="btn small" id="addImmunityBtn">+ Add Immunity</button>' +
+            '</div>' +
+            '<div class="ability-list" id="immunityList">' + immunityListInnerHtml(f) + '</div>' +
+            '<p class="trait-box-hint">Immunity to a specific negative effect, regardless of enemy trait.</p>' +
+            '<p class="trait-box-hint wiki-source-links">Sourced from the Battle Cats Wiki: <a href="https://battlecats.miraheze.org/wiki/Special_Abilities" target="_blank" rel="noopener">miraheze</a><a href="https://battle-cats.fandom.com/wiki/Special_Abilities" target="_blank" rel="noopener">fandom</a></p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="text-field" id="conjureWrap">' + conjureSectionHtml(f) + '</div>' +
+        '<div class="text-field talents-block">' +
+          '<div class="talents-header"><span>Talents</span><button type="button" class="btn small" id="addTalentBtn">+ Add Talent</button></div>' +
+          '<div class="talent-list" id="talentList">' + talentListInnerHtml(f.talents) + '</div>' +
+        '</div>' +
+        '<div class="text-field talents-block">' +
+          '<div class="talents-header"><span>Ultra Talents</span><button type="button" class="btn small" id="addUltraTalentBtn">+ Add Ultra Talent</button></div>' +
+          '<div class="talent-list" id="ultraTalentList">' + talentListInnerHtml(f.ultraTalents) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function talentIconContent(t){
+    return t.icon ? '<img src="' + t.icon + '" alt="">' : '<span class="talent-icon-placeholder">★</span>';
+  }
+
+  function talentRowHtml(t, idx){
+    return '<div class="talent-row" data-talent-row="' + idx + '">' +
+      '<button type="button" class="talent-icon-btn" data-talent-icon-btn="' + idx + '" title="Set talent icon">' + talentIconContent(t) + '</button>' +
+      '<input type="file" class="talent-icon-input" data-talent-icon-input="' + idx + '" accept="image/*" hidden>' +
+      '<input type="text" class="input talent-name-input" data-talent-name="' + idx + '" placeholder="Talent name" value="' + esc(t.name || '') + '">' +
+      '<label class="talent-np-field"><input type="number" min="0" step="1" data-talent-cost="' + idx + '" placeholder="0" value="' + (t.cost === undefined || t.cost === null ? '' : t.cost) + '"><span>NP</span></label>' +
+      '<button type="button" class="talent-remove-btn" data-talent-remove="' + idx + '" title="Remove talent">×</button>' +
+    '</div>';
+  }
+
+  function talentListInnerHtml(list){
+    return (list && list.length) ? list.map(talentRowHtml).join('') : '<p class="talent-empty">No talents added yet.</p>';
+  }
+
+  // Factory shared by the Talents list and the Ultra Talents list — both are the same
+  // "click to add a row (icon + name + NP cost)" system, just bound to different fields.
+  function makeTalentListController(fieldKey, containerId){
+    function list(f){
+      if (!Array.isArray(f[fieldKey])) f[fieldKey] = [];
+      return f[fieldKey];
+    }
+    function render(f){
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = talentListInnerHtml(list(f));
+      bind(el, f);
+    }
+    async function handleIconUpload(file, f, idx){
+      try {
+        const dataUrl = await resizeImageFromFile(file, 96, 0.82);
+        list(f)[idx].icon = dataUrl;
+        render(f);
+      } catch(e){
+        showToast('Could not load that icon.', 'error');
+      }
+    }
+    function bind(listEl, f){
+      const arr = list(f);
+      listEl.querySelectorAll('[data-talent-icon-btn]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = btn.dataset.talentIconBtn;
+          listEl.querySelector('[data-talent-icon-input="' + idx + '"]').click();
+        });
+      });
+      listEl.querySelectorAll('[data-talent-icon-input]').forEach(inp => {
+        inp.addEventListener('change', async () => {
+          const idx = Number(inp.dataset.talentIconInput);
+          if (inp.files[0]) await handleIconUpload(inp.files[0], f, idx);
+        });
+      });
+      listEl.querySelectorAll('[data-talent-name]').forEach(inp => {
+        inp.addEventListener('input', () => { arr[Number(inp.dataset.talentName)].name = inp.value; });
+      });
+      listEl.querySelectorAll('[data-talent-cost]').forEach(inp => {
+        inp.addEventListener('input', () => { arr[Number(inp.dataset.talentCost)].cost = inp.value; });
+      });
+      listEl.querySelectorAll('[data-talent-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          arr.splice(Number(btn.dataset.talentRemove), 1);
+          render(f);
+        });
+      });
+    }
+    function addNew(f){
+      list(f).push({ icon:null, name:'', cost:'' });
+      render(f);
+    }
+    return { render, bind, addNew };
+  }
+
+  const talentController = makeTalentListController('talents', 'talentList');
+  const ultraTalentController = makeTalentListController('ultraTalents', 'ultraTalentList');
+
+  function updateLevelPreviewBadges(f){
+    if (!levelPreviewOn) return;
+    const level = formPreviewLevel(f);
+    const baseLevel = formBaseLevel(f, activeFormIndex);
+    ['hp', 'ap'].forEach(key => {
+      const el = document.querySelector('[data-level-preview="' + key + '"]');
+      if (!el) return;
+      const growth = Number(key === 'hp' ? f.hpGrowth : f.dmgGrowth) || 0;
+      const base = Number(f.stats[key]) || 0;
+      const atLevel = base + growth * (level - baseLevel);
+      el.textContent = '@ Lvl ' + level + ': ' + formatNum(Math.round(atLevel));
+    });
+  }
+
+  // Keeps the "Effective dmg" / "Effective HP" small-text under the Damage and HP fields in sync
+  // with the current stat values, level preview, and trait effects — without a full re-render.
+  function updateEffectivePreviews(f){
+    ['hp', 'ap'].forEach(key => {
+      const el = document.querySelector('[data-effective-preview="' + key + '"]');
+      if (!el) return;
+      if (!effectivePreviewOn){ el.hidden = true; return; }
+      const level = levelPreviewOn ? formPreviewLevel(f) : formBaseLevel(f, activeFormIndex);
+      const baseLevel = formBaseLevel(f, activeFormIndex);
+      const growth = Number(key === 'hp' ? f.hpGrowth : f.dmgGrowth) || 0;
+      const base = Number(f.stats[key]) || 0;
+      const value = levelPreviewOn ? (base + growth * (level - baseLevel)) : base;
+      const text = effectivePreviewText(key, f, value);
+      el.textContent = text;
+      el.hidden = !text;
+    });
+  }
+
+  function updateDpsDisplay(f){
+    const el = document.getElementById('dpsComputedValue');
+    const level = currentPreviewLevel(f);
+    if (el){
+      const cycle = attackCycleOf(f);
+      const qualifies = isEffectiveQualified(f);
+      if (cycle > 0){
+        let val = apAtLevel(f, activeFormIndex, level) / cycle;
+        let suffix = '';
+        if (effectivePreviewOn && qualifies){ val *= bestDealtMultiplier(f); suffix = '*'; }
+        el.textContent = formatDps(val) + suffix;
+      } else {
+        el.textContent = '—';
+      }
+    }
+    f.stats.dps = attackCycleOf(f) > 0 ? baseDps(f) : '';
+  }
+
+  function updateEffectiveHint(f){
+    const hint = document.getElementById('effectivePreviewHint');
+    if (!hint) return;
+    hint.hidden = !effectivePreviewOn;
+    hint.textContent = effectiveHintText(f);
+  }
+
+  function updateLevelPreviewHint(f){
+    const hint = document.getElementById('levelPreviewHint');
+    if (hint) hint.textContent = levelPreviewHintText(f);
+  }
+
+  function bindFormPanelEvents(panelsEl, f){
+    const nameInp = panelsEl.querySelector('input[data-form-name]');
+    if (nameInp) nameInp.addEventListener('input', () => {
+      f.label = nameInp.value;
+      const tabBtn = document.querySelector('.form-tab[data-idx="' + activeFormIndex + '"]');
+      if (tabBtn) tabBtn.textContent = formLabelAt(workingCat, activeFormIndex);
+      if (activeFormIndex === 0){
+        document.getElementById('editTitle').textContent = editingIsNew ? 'New Cat' : ('Edit ' + (nameInp.value.trim() || 'Cat'));
+      }
+    });
+    const targetTypeSelect = panelsEl.querySelector('#targetTypeSelect');
+    if (targetTypeSelect) targetTypeSelect.addEventListener('change', () => {
+      f.targetType = targetTypeSelect.value;
+      renderFormTabsAndPanels();
+    });
+    const rangeModifierSelect = panelsEl.querySelector('#rangeModifierSelect');
+    if (rangeModifierSelect) rangeModifierSelect.addEventListener('change', () => {
+      f.rangeModifier = rangeModifierSelect.value;
+      renderFormTabsAndPanels();
+    });
+
+    panelsEl.querySelectorAll('input[data-stat]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        f.stats[inp.dataset.stat] = inp.value;
+        if (inp.dataset.stat === 'ap' || inp.dataset.stat === 'tba' || inp.dataset.stat === 'animTime') updateDpsDisplay(f);
+        if (inp.dataset.stat === 'hp' || inp.dataset.stat === 'ap'){
+          updateLevelPreviewBadges(f);
+          updateEffectivePreviews(f);
+        }
+      });
+    });
+    panelsEl.querySelectorAll('input[data-growth]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        f[inp.dataset.growth] = inp.value;
+        updateLevelPreviewBadges(f);
+        updateEffectivePreviews(f);
+        if (inp.dataset.growth === 'dmgGrowth') updateDpsDisplay(f);
+      });
+    });
+    panelsEl.querySelectorAll('textarea[data-text]').forEach(ta => {
+      ta.addEventListener('input', () => { f[ta.dataset.text] = ta.value; });
+    });
+
+    const levelBtn = panelsEl.querySelector('#levelPreviewBtn');
+    if (levelBtn) levelBtn.addEventListener('click', () => {
+      levelPreviewOn = !levelPreviewOn;
+      renderFormTabsAndPanels();
+    });
+    const levelInput = panelsEl.querySelector('#levelPreviewInput');
+    if (levelInput) levelInput.addEventListener('input', () => {
+      const raw = levelInput.value;
+      f.previewLevel = raw === '' ? null : Math.max(1, Number(raw) || 1);
+      updateLevelPreviewBadges(f);
+      updateDpsDisplay(f);
+      updateLevelPreviewHint(f);
+      updateEffectivePreviews(f);
+    });
+
+    const baseLevelInput = panelsEl.querySelector('#baseLevelInput');
+    const setBaseLevelBtn = panelsEl.querySelector('#setBaseLevelBtn');
+    if (setBaseLevelBtn) setBaseLevelBtn.addEventListener('click', () => {
+      const lvl = Math.max(1, Number(baseLevelInput.value) || 1);
+      f.baseLevel = lvl;
+      showToast('Base level for ' + (FORM_LABELS[activeFormIndex] || 'this form') + ' set to Level ' + lvl + '.');
+      renderFormTabsAndPanels();
+    });
+    const resetBaseLevelBtn = panelsEl.querySelector('#resetBaseLevelBtn');
+    if (resetBaseLevelBtn) resetBaseLevelBtn.addEventListener('click', () => {
+      f.baseLevel = null;
+      renderFormTabsAndPanels();
+    });
+
+    const addTraitBtn = panelsEl.querySelector('#addTraitBtn');
+    const traitSelect = panelsEl.querySelector('#strongTraitSelect');
+    const traitAbilitySelect = panelsEl.querySelector('#traitAbilitySelect');
+    const traitValueFields = panelsEl.querySelector('#traitValueFields');
+    function syncTraitValueFields(){
+      if (!traitValueFields || !traitAbilitySelect) return;
+      const type = TRAIT_ABILITY_MAP[traitAbilitySelect.value];
+      traitValueFields.innerHTML = traitValueFieldsHtml(type);
+    }
+    if (traitAbilitySelect) traitAbilitySelect.addEventListener('change', syncTraitValueFields);
+    syncTraitValueFields();
+
+    if (addTraitBtn && traitSelect && traitAbilitySelect) addTraitBtn.addEventListener('click', () => {
+      const traits = Array.from(traitSelect.selectedOptions).map(o => o.value).filter(Boolean);
+      const ability = traitAbilitySelect.value;
+      if (!traits.length || !ability) return;
+      const type = TRAIT_ABILITY_MAP[ability];
+      const entry = { ability, traits };
+      (type.fields || []).forEach(fld => {
+        const inp = traitValueFields.querySelector('[data-field-input="' + fld.key + '"]');
+        const raw = inp ? inp.value : '';
+        const num = Number(raw);
+        entry[fld.key] = (raw !== '' && !isNaN(num)) ? num : fld.default;
+      });
+      f.traitEffects = f.traitEffects || [];
+      const entryKey = ability + '|' + traits.slice().sort().join(',');
+      const exists = f.traitEffects.some(e => (e.ability + '|' + (e.traits || []).slice().sort().join(',')) === entryKey);
+      if (!exists) f.traitEffects.push(entry);
+      Array.from(traitSelect.options).forEach(o => { o.selected = false; });
+      syncTraitValueFields();
+      renderTraitBox(f);
+    });
+    const traitListEl = panelsEl.querySelector('#traitList');
+    if (traitListEl) bindTraitListEvents(traitListEl, f);
+
+    const effectiveBtn = panelsEl.querySelector('#effectivePreviewBtn');
+    if (effectiveBtn) effectiveBtn.addEventListener('click', () => {
+      effectivePreviewOn = !effectivePreviewOn;
+      effectiveBtn.classList.toggle('active', effectivePreviewOn);
+      updateEffectiveHint(f);
+      updateDpsDisplay(f);
+      updateEffectivePreviews(f);
+    });
+
+    neutralAbilityController.render(f, panelsEl);
+
+    bindEvolveReqSectionEvents(panelsEl, f, activeFormIndex);
+
+    const immunitySelect = panelsEl.querySelector('#immunitySelect');
+    const addImmunityBtn = panelsEl.querySelector('#addImmunityBtn');
+    if (addImmunityBtn && immunitySelect) addImmunityBtn.addEventListener('click', () => {
+      const key = immunitySelect.value;
+      if (!key) return;
+      f.immunities = f.immunities || [];
+      if (!f.immunities.includes(key)) f.immunities.push(key);
+      renderImmunityBox(f, panelsEl);
+    });
+    const immunityListEl = panelsEl.querySelector('#immunityList');
+    if (immunityListEl) bindImmunityListEvents(immunityListEl, f);
+
+    const conjureWrapEl = panelsEl.querySelector('#conjureWrap');
+    if (conjureWrapEl) bindConjureSectionEvents(conjureWrapEl, f);
+
+    const talentListEl = panelsEl.querySelector('#talentList');
+    if (talentListEl) talentController.bind(talentListEl, f);
+    const addTalentBtn = panelsEl.querySelector('#addTalentBtn');
+    if (addTalentBtn) addTalentBtn.addEventListener('click', () => talentController.addNew(f));
+
+    const ultraTalentListEl = panelsEl.querySelector('#ultraTalentList');
+    if (ultraTalentListEl) ultraTalentController.bind(ultraTalentListEl, f);
+    const addUltraTalentBtn = panelsEl.querySelector('#addUltraTalentBtn');
+    if (addUltraTalentBtn) addUltraTalentBtn.addEventListener('click', () => ultraTalentController.addNew(f));
+
+    const dropzone = panelsEl.querySelector('#imageDrop');
+    const fileInput = panelsEl.querySelector('#imageInput');
+    panelsEl.querySelector('#uploadImgBtn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      if (fileInput.files[0]) await handleImageUpload(fileInput.files[0], f);
+    });
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+    dropzone.addEventListener('drop', async e => {
+      e.preventDefault();
+      dropzone.classList.remove('drag');
+      if (e.dataTransfer.files[0]) await handleImageUpload(e.dataTransfer.files[0], f);
+    });
+
+    const removeBtn = panelsEl.querySelector('#removeImgBtn');
+    if (removeBtn) removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      f.image = null;
+      renderFormTabsAndPanels();
+    });
+  }
+
+  async function handleImageUpload(file, f){
+    try {
+      const dataUrl = await resizeImageFromFile(file, 360, 0.85);
+      f.image = dataUrl;
+      renderFormTabsAndPanels();
+    } catch(e){
+      showToast('Could not load that image.', 'error');
+    }
+  }
+
+  // Wraps a promise so it can never hang forever — if it doesn't settle within
+  // `ms`, we reject explicitly instead of leaving the UI stuck on "Saving…"
+  // with no feedback at all.
+  function withTimeout(promise, ms, label){
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error((label || 'Operation') + ' timed out after ' + ms + 'ms')), ms);
+      promise.then(
+        v => { clearTimeout(timer); resolve(v); },
+        e => { clearTimeout(timer); reject(e); }
+      );
+    });
+  }
+
+  async function saveWorkingCat(){
+    const firstFormName = (workingCat.forms[0] && workingCat.forms[0].label || '').trim();
+    if (!firstFormName){
+      showToast('Give Form 1 a name first.', 'error');
+      activeFormIndex = 0;
+      renderFormTabsAndPanels();
+      const nameInp = document.querySelector('input[data-form-name]');
+      if (nameInp) nameInp.focus();
+      return;
+    }
+
+    if (!localStorageAvailable()){
+      showToast('Your browser is blocking local storage (e.g. private/incognito mode) so cats can\u2019t be saved here.', 'error');
+      return;
+    }
+
+    workingCat.name = firstFormName;
+
+    workingCat.forms.forEach((f, i) => {
+      f.label = (f.label || '').trim() || FORM_LABELS[i] || ('Form ' + (i + 1));
+      STAT_FIELDS.forEach(sf => {
+        const v = f.stats[sf.key];
+        f.stats[sf.key] = (v === '' || v === null || v === undefined) ? 0 : Number(v);
+      });
+      EXTRA_RANGE_STAT_KEYS.forEach(key => {
+        const v = f.stats[key];
+        f.stats[key] = (v === '' || v === null || v === undefined) ? 0 : Number(v);
+      });
+      if (!TARGET_TYPE_MAP[f.targetType]) f.targetType = 'single';
+      if (!RANGE_MODIFIER_MAP[f.rangeModifier]) f.rangeModifier = 'none';
+      f.hpGrowth = (f.hpGrowth === '' || f.hpGrowth == null) ? 0 : Number(f.hpGrowth);
+      f.dmgGrowth = (f.dmgGrowth === '' || f.dmgGrowth == null) ? 0 : Number(f.dmgGrowth);
+      f.description = (f.description || '').trim() || 'None';
+      if (!Array.isArray(f.abilities)) f.abilities = [];
+      if (!Array.isArray(f.immunities)) f.immunities = [];
+      if (!f.conjure || typeof f.conjure !== 'object') f.conjure = { name:'', damage:'', abilities:[] };
+      if (!Array.isArray(f.conjure.abilities)) f.conjure.abilities = [];
+      f.conjure.name = (f.conjure.name || '').trim();
+      f.conjure.damage = (f.conjure.damage === '' || f.conjure.damage == null) ? '' : Number(f.conjure.damage);
+      if (!Array.isArray(f.talents)) f.talents = [];
+      if (!Array.isArray(f.ultraTalents)) f.ultraTalents = [];
+      if (!Array.isArray(f.traitEffects)) f.traitEffects = [];
+      f.previewLevel = (f.previewLevel === '' || f.previewLevel == null) ? null : Math.max(1, Number(f.previewLevel) || 1);
+      f.baseLevel = (f.baseLevel === '' || f.baseLevel == null) ? null : Math.max(1, Number(f.baseLevel) || 1);
+
+      if (!f.evolveReq || typeof f.evolveReq !== 'object') f.evolveReq = { materials: [], xp: '' };
+      if (!Array.isArray(f.evolveReq.materials)) f.evolveReq.materials = [];
+      f.evolveReq.materials = f.evolveReq.materials
+        .filter(e => e && MATERIAL_MAP[e.key])
+        .map(e => ({ key: e.key, variant: e.variant, amount: (e.amount === '' || e.amount == null) ? 0 : Number(e.amount) }));
+      f.evolveReq.xp = (f.evolveReq.materials.length && f.evolveReq.xp !== '' && f.evolveReq.xp != null) ? Number(f.evolveReq.xp) : '';
+      f.evolveReq.level = (f.evolveReq.level === '' || f.evolveReq.level == null) ? '' : Math.max(1, Number(f.evolveReq.level) || 1);
+    });
+
+    // Ultra Forms always need evolve requirements — they have no default "reach a level"
+    // fallback the way Evolved (→ Lvl 10) and True (→ Lvl 30) do, so block the save here
+    // rather than silently saving an Ultra Form nobody can actually reach.
+    const ultraForm = workingCat.forms[3];
+    if (workingCat.formCount >= 4 && ultraForm && (!ultraForm.evolveReq.materials || !ultraForm.evolveReq.materials.length)){
+      showToast('Ultra Forms always need at least one evolve material — add one on the Ultra tab.', 'error');
+      activeFormIndex = 3;
+      renderFormTabsAndPanels();
+      return;
+    }
+
+    if (!workingCat.id) workingCat.id = uid();
+
+    const saveBtn = document.getElementById('saveCatBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    try {
+      await withTimeout(persistCat(workingCat), 10000, 'Saving cat');
+
+      // Thumbnail generation is a nice-to-have, not a requirement for saving —
+      // never let a failure here (e.g. a bad image) block the cat from being
+      // added to the list. Fall back to no thumbnail instead of aborting.
+      let thumb = null;
+      if (workingCat.forms[0] && workingCat.forms[0].image){
+        try { thumb = await withTimeout(resizeDataUrl(workingCat.forms[0].image, 110, 0.75), 8000, 'Thumbnail'); }
+        catch(thumbErr){ thumb = null; }
+      }
+
+      const summary = { id: workingCat.id, name: workingCat.name, rarity: workingCat.rarity, bannerId: workingCat.bannerId || MY_BANNER_ID, formCount: workingCat.formCount, thumb };
+      const existingIdx = indexCache.findIndex(c => c.id === workingCat.id);
+      if (existingIdx >= 0) indexCache[existingIdx] = summary; else indexCache.push(summary);
+      await withTimeout(persistIndex(), 10000, 'Saving cat list');
+
+      // Re-fetch the index straight from storage rather than trusting the
+      // in-memory copy, so the list view always reflects what's actually saved.
+      indexCache = await fetchIndex();
+
+      showToast(workingCat.name + ' saved!');
+      showView('list');
+    } catch(err){
+      // Log the real error so it's visible in devtools for diagnosis, and
+      // surface a bit of detail in the toast instead of a fully generic message.
+      console.error('Whisker Works save failed:', err);
+      const detail = (err && err.message) ? (': ' + String(err.message).slice(0, 120)) : '';
+      showToast('Something went wrong saving' + detail, 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Cat';
+    }
+  }
+
+  /* ============================= Wiring ============================= */
+
+  document.querySelectorAll('.tab-btn[data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+  document.getElementById('newCatBtn').addEventListener('click', () => openEditor(null));
+  document.getElementById('newBannerBtn').addEventListener('click', () => openCreateBannerModal(null));
+  document.getElementById('backToList').addEventListener('click', () => showView('list'));
+  document.getElementById('addToCompareBtn').addEventListener('click', openComparePickerModal);
+  document.getElementById('compareEffectiveBtn').addEventListener('click', () => {
+    compareEffectiveOn = !compareEffectiveOn;
+    document.getElementById('compareEffectiveBtn').classList.toggle('active', compareEffectiveOn);
+    renderCompare();
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => { searchTerm = e.target.value; renderList(); });
+  document.getElementById('rarityFilterSelect').addEventListener('change', e => { rarityFilter = e.target.value; renderList(); });
+  document.getElementById('bannerFilterSelect').addEventListener('change', e => { bannerFilter = e.target.value; renderList(); });
+
+  document.getElementById('catGrid').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id, action = btn.dataset.action;
+    if (action === 'edit') openEditor(id);
+    else if (action === 'delete') confirmDeleteCat(id);
+    else if (action === 'toggle-compare') toggleCompareSelection(id, true);
+    else if (action === 'export') exportSingleCat(id);
+  });
+
+  document.getElementById('deleteCatBtn').addEventListener('click', () => { if (workingCat.id) confirmDeleteCat(workingCat.id); });
+
+  document.getElementById('catForm').addEventListener('submit', e => {
+    e.preventDefault();
+    saveWorkingCat();
+  });
+
+  /* ---- Export / Import wiring ---- */
+
+  document.getElementById('exportAllBtn').addEventListener('click', exportAll);
+  document.getElementById('importAllBtn').addEventListener('click', () => document.getElementById('importAllInput').click());
+  document.getElementById('importCatBtn').addEventListener('click', () => document.getElementById('importCatInput').click());
+  document.getElementById('exportBannerBtn').addEventListener('click', () => exportBanner(bannerFilter));
+  document.getElementById('importBannerBtn').addEventListener('click', () => document.getElementById('importBannerInput').click());
+
+  [['importAllInput'], ['importCatInput'], ['importBannerInput']].forEach(([inputId]) => {
+    const inp = document.getElementById(inputId);
+    inp.addEventListener('change', async () => {
+      const file = inp.files && inp.files[0];
+      inp.value = ''; // allow re-selecting the same file next time
+      if (file) await handleImportFile(file);
+    });
+  });
+
+  /* ============================= Banners ============================= */
+
+  function renderBannerFilterSelect(){
+    const el = document.getElementById('bannerFilterSelect');
+    const current = bannerFilter;
+    el.innerHTML = '<option value="all">All banners</option>' +
+      bannersCache.map(b => '<option value="' + b.id + '">' + esc(b.name) + '</option>').join('');
+    el.value = bannersCache.some(b => b.id === current) || current === 'all' ? current : 'all';
+  }
+
+  function openCreateBannerModal(onCreated){
+    let nameValue = '';
+    openModal({
+      title: 'Create banner',
+      body: '<label class="text-field"><span>Banner name</span><input type="text" id="newBannerNameInput" class="input" style="width:100%" placeholder="e.g. Uber Rare Vault"></label>',
+      confirmLabel: 'Create',
+      onConfirm: async () => {
+        const name = nameValue.trim() || 'Untitled Banner';
+        const banner = { id: uid('banner'), name: name };
+        bannersCache.push(banner);
+        await persistBanners();
+        renderBannerFilterSelect();
+        showToast(banner.name + ' banner created!');
+        if (onCreated) onCreated(banner.id);
+      }
+    });
+    const inp = document.getElementById('newBannerNameInput');
+    if (inp){
+      inp.addEventListener('input', () => { nameValue = inp.value; });
+      inp.focus();
+    }
+  }
+
+  /* ============================= Init ============================= */
+
+  async function init(){
+    bannersCache = await fetchBanners();
+    renderBannerFilterSelect();
+    indexCache = await fetchIndex();
+    renderList();
+    updateCompareTabBadge();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
